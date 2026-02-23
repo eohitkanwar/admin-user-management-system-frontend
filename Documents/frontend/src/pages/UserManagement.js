@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { getUsers, deleteUser, createUser } from "../services/userServices";
 import { sendWelcomeEmail } from "../services/emailService";
-import { FiEdit2, FiTrash2, FiShield, FiMail, FiChevronLeft, FiChevronRight, FiSearch, FiUserPlus } from "react-icons/fi";
+import { FiEdit2, FiTrash2, FiShield, FiChevronLeft, FiChevronRight, FiSearch, FiUserPlus } from "react-icons/fi";
 import { toast } from "react-toastify";
 import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
 import "../styles/UserManagement.css";
@@ -12,9 +12,14 @@ const USERS_PER_PAGE = 6;
 const UserManagement = () => {
   // ✅ ALL HOOKS FIRST (NO CONDITION)
   const navigate = useNavigate();
+  
+  console.log('=== USER MANAGEMENT COMPONENT MOUNTED ==='); // Debug component mount
+  console.log('localStorage userInfo:', localStorage.getItem('userInfo')); // Debug localStorage
+  console.log('localStorage token:', !!localStorage.getItem('token')); // Debug token
 
   const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalUsers, setTotalUsers] = useState(0);
@@ -22,56 +27,125 @@ const UserManagement = () => {
   const [deleteUserData, setDeleteUserData] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddUserModal, setShowAddUserModal] = useState(false);
-  const [newUser, setNewUser] = useState({ username: "", email: "", role: "user" });
+  const [newUser, setNewUser] = useState({ username: "", email: "", password: "", role: "user" });
 
   // 🔐 AUTH CHECK (NORMAL VARIABLE — NOT A HOOK)
   const userInfo = JSON.parse(localStorage.getItem("userInfo"));
-  const isAdmin = userInfo && userInfo.role === "admin";
+  console.log('UserManagement - userInfo from localStorage:', userInfo); // Debug
+  console.log('UserManagement - userInfo.role:', userInfo?.role); // Debug
+  console.log('UserManagement - typeof userInfo.role:', typeof userInfo?.role); // Debug
+  
+  // TEMPORARY: Bypass admin check to test backend
+const isAdmin = userInfo?.role === "admin";  //   userInfo.role === "admin" || 
+  //   userInfo.role === "administrator" || 
+  //   userInfo.role === "Admin" || 
+  //   userInfo.role === "ADMIN" ||ss
+  //   userInfo.role?.toLowerCase()?.includes("admin")
+  // );
+  
+  console.log('UserManagement - isAdmin check:', { userInfo, role: userInfo?.role, isAdmin }); // Debug
 
   // 🔹 FETCH USERS
-  const fetchUsers = async (page = currentPage, search = searchTerm) => {
-  console.log('fetchUsers called with loading state:', loading); // Debug log
-  try {
-    setLoading(true);
-    console.log('Fetching users with:', { page, search }); // Debug log
-    const res = await getUsers(page, USERS_PER_PAGE, search);
-
-    console.log("API Response:", res); // Debug API response
-    console.log("Users array:", res?.users); // Debug users array
+  const fetchUsers = useCallback(async (page, search) => {
+    console.log('=== FETCH USERS START ==='); // Debug
+    console.log('fetchUsers called with:', { page, search, loading, error }); // Debug log
+    console.log('API URL:', 'http://localhost:5000/api/auth/users'); // Debug API URL
+    console.log('Token available:', !!localStorage.getItem('token')); // Debug token
     
-    // Handle paginated response
-    if (res && res.users) {
-      setUsers(res.users);
-      setTotalPages(res.totalPages || 1);
-      setTotalUsers(res.totalUsers || 0);
-      console.log("Users set:", res.users.length, "users found"); // Debug user count
-    } else if (Array.isArray(res)) {
-      // Fallback for non-paginated response
-      setUsers(res);
-      setTotalPages(1);
-      setTotalUsers(res.length);
-      console.log("Fallback users set:", res.length, "users found"); // Debug fallback
-    } else {
-      setUsers([]);
+    try {
+      setLoading(true);
+      setError(null);
+      console.log('Making API call to getUsers...'); // Debug API call start
+      
+      const res = await getUsers(page, USERS_PER_PAGE, search);
+      console.log('userServices response:', res);
+      
+      if (res && res.users) {
+        console.log('Users loaded via userServices:', res.users);
+        console.log('Setting users state with:', res.users.length, 'users');
+        setUsers(res.users || []);
+        setTotalPages(res.totalPages || 1);
+        setTotalUsers(res.totalUsers || 0);
+        console.log('Users state set successfully!');
+      } else if (Array.isArray(res)) {
+        console.log('Users loaded via userServices (direct array):', res);
+        console.log('Setting users state with:', res.length, 'users');
+        setUsers(res || []);
+        setTotalPages(1);
+        setTotalUsers(res.length || 0);
+        console.log('Users state set successfully!');
+      } else if (res.data && Array.isArray(res.data)) {
+        console.log('Users loaded via userServices (data array):', res.data);
+        console.log('Setting users state with:', res.data.length, 'users');
+        setUsers(res.data || []);
+        setTotalPages(res.totalPages || 1);
+        setTotalUsers(res.total || res.data.length || 0);
+        console.log('Users state set successfully!');
+      } else {
+        console.error('Failed to load users via userServices - unknown format:', res);
+        console.error('Expected formats:');
+        console.error('1. {users: [...]}');
+        console.error('2. {data: [...]}');
+        console.error('3. [...direct array...]');
+        
+        setUsers([]);
+        setTotalPages(1);
+        setTotalUsers(0);
+        console.log('Set empty users state to stop loading');
+      }
+    } catch (error) {
+      console.error("Fetch error:", error); // Debug error
+      console.error("Error details:", {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data
+      }); // Debug error details
+      setError(error);
+      toast.error("Failed to fetch users");
+      setUsers([]); // 🛡️ fallback
       setTotalPages(1);
       setTotalUsers(0);
-      console.log("No users found in response"); // Debug no users
-    }
-  } catch (error) {
-    console.error("Fetch error:", error); // Debug error
-    toast.error("Failed to fetch users");
-    setUsers([]); // 🛡️ fallback
-    setTotalPages(1);
-    setTotalUsers(0);
-  } finally {
-    // Keep loading for at least 2 seconds
-    setTimeout(() => {
+    } finally {
+      console.log('=== FETCH USERS FINALLY ==='); // Debug
       setLoading(false);
-    }, 2000);
-  }
-};
+    }
+  }, []);
 
-// 🔹 SEARCH HANDLER WITH LOADING
+  // 🔹 USE EFFECT FOR FETCHING USERS
+  useEffect(() => {
+    console.log('useEffect triggered!'); // Debug
+    console.log('isAdmin:', isAdmin); // Debug
+    console.log('currentPage:', currentPage); // Debug
+    console.log('searchTerm:', searchTerm); // Debug
+    console.log('fetchUsers function:', typeof fetchUsers); // Debug
+    
+    if (isAdmin) {
+      console.log('useEffect - calling fetchUsers'); // Debug
+      fetchUsers(currentPage, searchTerm);
+    } else {
+      console.log('useEffect - isAdmin is false, skipping fetchUsers'); // Debug
+    }
+  }, [isAdmin, currentPage, searchTerm, fetchUsers]);
+
+  // ❌ ACCESS DENIED UI (AFTER HOOKS ✔️)
+  if (!isAdmin) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="p-8 text-center bg-white rounded-xl shadow">
+          <div className="flex items-center justify-center w-16 h-16 mx-auto rounded-full bg-red-100">
+            <FiShield className="w-8 h-8 text-red-600" />
+          </div>
+          <h2 className="mt-4 text-xl font-semibold text-gray-800">
+            Access Denied
+          </h2>
+          <p className="mt-2 text-gray-600">
+            Admin access only
+          </p>
+        </div>
+      </div>
+    );
+  }
 const handleSearch = (e) => {
   const newSearchTerm = e.target.value;
   console.log('Search triggered, setting loading to true'); // Debug log
@@ -102,7 +176,7 @@ const confirmDelete = async () => {
     toast.success("User deleted successfully");
     setShowDeleteModal(false);
     setDeleteUserData(null);
-    fetchUsers(); // This will show loading again
+    fetchUsers(currentPage, searchTerm); // This will show loading again
   } catch (error) {
     toast.error(error.response?.data?.message || "Failed to delete user");
   } finally {
@@ -114,30 +188,21 @@ const confirmDelete = async () => {
 
 
   useEffect(() => {
+    console.log('useEffect triggered!'); // Debug
+    console.log('isAdmin:', isAdmin); // Debug
+    console.log('currentPage:', currentPage); // Debug
+    console.log('searchTerm:', searchTerm); // Debug
+    console.log('fetchUsers function:', typeof fetchUsers); // Debug
+    console.log('localStorage token:', !!localStorage.getItem('token')); // Debug
+    console.log('localStorage userInfo:', localStorage.getItem('userInfo')); // Debug
+    
     if (isAdmin) {
-      console.log('useEffect triggered with:', { currentPage, searchTerm }); // Debug log
-      fetchUsers();
+      console.log('useEffect - calling fetchUsers'); // Debug
+      fetchUsers(currentPage, searchTerm);
+    } else {
+      console.log('useEffect - isAdmin is false, skipping fetchUsers'); // Debug
     }
-  }, [isAdmin, currentPage, searchTerm]);
-
-  // ❌ ACCESS DENIED UI (AFTER HOOKS ✔️)
-  if (!isAdmin) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <div className="p-8 text-center bg-white rounded-xl shadow">
-          <div className="flex items-center justify-center w-16 h-16 mx-auto rounded-full bg-red-100">
-            <FiShield className="w-8 h-8 text-red-600" />
-          </div>
-          <h2 className="mt-4 text-xl font-semibold text-gray-800">
-            Access Denied
-          </h2>
-          <p className="mt-2 text-gray-600">
-            Admin access only
-          </p>
-        </div>
-      </div>
-    );
-  }
+  }, [isAdmin, currentPage, searchTerm, fetchUsers]);
 
   // 🔹 PAGINATION
   const indexOfLastUser = currentPage * USERS_PER_PAGE;
@@ -171,6 +236,9 @@ const confirmDelete = async () => {
 
   // Handle save new user
   const handleSaveNewUser = async () => {
+    console.log('handleSaveNewUser called with newUser:', newUser); // Debug
+    
+    // Validation
     if (!newUser.username || !newUser.email || !newUser.password) {
       toast.error("Username, email, and password are required");
       return;
@@ -207,7 +275,10 @@ const confirmDelete = async () => {
 
     try {
       setLoading(true);
+      setError(null);
       console.log('Creating user with data:', newUser); // Debug log
+      console.log('Current user token:', localStorage.getItem('token')); // Debug log
+      console.log('Current user info:', localStorage.getItem('userInfo')); // Debug log
       
       // Call the actual API to create user
       const response = await createUser(newUser);
@@ -224,11 +295,20 @@ const confirmDelete = async () => {
       
       setShowAddUserModal(false);
       setNewUser({ username: "", email: "", password: "", role: "user" });
-      fetchUsers(); // Refresh user list
+      fetchUsers(currentPage, searchTerm); // Refresh user list
     } catch (error) {
       console.error('Error creating user:', error); // Debug error
+      console.error('Error response:', error.response); // Debug error response
+      console.error('Error status:', error.response?.status); // Debug error status
+      console.error('Error data:', error.response?.data); // Debug error data
+      
+      setError(error);
       const errorMessage = error.response?.data?.message || error.message || "Failed to add user";
-      toast.error(errorMessage);
+      
+      // Don't show toast for 403 errors to prevent infinite loops
+      if (error.response?.status !== 403) {
+        toast.error(errorMessage);
+      }
     } finally {
       setTimeout(() => {
         setLoading(false);
@@ -489,6 +569,5 @@ const confirmDelete = async () => {
       )}
     </div>
   );
-};
-
-export default UserManagement;
+}
+  export default UserManagement;

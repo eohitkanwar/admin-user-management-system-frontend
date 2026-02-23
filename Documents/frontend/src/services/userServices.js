@@ -1,130 +1,127 @@
 // src/services/userService.js
 import api from "./api";
 
-// ✅ Get all users (ADMIN) with pagination
-export const getUsers = async (page = 1, limit = 6, search = '') => {
-  const params = new URLSearchParams({
-    page: page.toString(),
-    limit: limit.toString(),
-  });
-  
-  if (search) {
-    params.append('search', search);
-  }
-  
-  const url = `/auth/users?${params}`;
-  console.log('API URL being called:', url); // Debug URL
+// ✅ Get single user
+export const getUserById = async (userId) => {
+  console.log('Getting user by ID:', userId);
   
   try {
-    const { data } = await api.get(url);
-    console.log('API Response from service:', data); // Debug response
+    const { data } = await api.get(`/auth/users/${userId}`);
+    console.log('User found:', data);
     return data;
   } catch (error) {
-    console.error('API Error in service:', error); // Debug error
+    console.error('Get user by ID error:', error);
     throw error;
   }
 };
 
-// ✅ Get single user
-export const getUserById = async (userId) => {
+// ✅ Get all users (ADMIN) with pagination
+export const getUsers = async (page = 1, limit = 6, search = '') => {
+  console.log('Fetching users with:', { page, limit, search });
+  
   try {
-    // Try direct API call first (most efficient)
-    const endpoints = [
-      `/auth/users/${userId}`,
-      `/users/${userId}`,
-      `/user/${userId}`
-    ];
-    
-    for (const endpoint of endpoints) {
-      try {
-        const response = await api.get(endpoint);
-        if (response.data) {
-          return response.data;
-        }
-      } catch (error) {
-        continue;
-      }
-    }
-    
-    // If direct calls fail, try getting all users and finding the user
-    const allUsersResponse = await api.get("/auth/users");
-    let allUsers = allUsersResponse.data;
-    
-    // Handle different response formats
-    if (allUsers.users && Array.isArray(allUsers.users)) {
-      allUsers = allUsers.users;
-    } else if (!Array.isArray(allUsers)) {
-      throw new Error(`Invalid response format: expected array but got ${typeof allUsers}`);
-    }
-    
-    // Find the user by ID in the list
-    const user = allUsers.find(u => u._id === userId || u.id === userId);
-    
-    if (user) {
-      return user;
-    } else {
-      throw new Error(`User with ID ${userId} not found`);
-    }
+    const { data } = await api.get(`/auth/users?page=${page}&limit=${limit}&search=${search}`);
+    console.log('API Response:', data);
+    return data;
   } catch (error) {
-    console.error('Error in getUserById:', error);
+    console.error('Get users error:', error);
     throw error;
   }
 };
 
 // ✅ Create user (if backend supports it)
 export const createUser = async (userData) => {
-  const { data } = await api.post("/auth/users", userData);
-  return data;
+  console.log('Creating user:', userData);
+  
+  try {
+    const { data } = await api.post("/auth/users", userData);
+    console.log('User created:', data);
+    return data;
+  } catch (error) {
+    console.error('Create user error:', error);
+    throw error;
+  }
 };
 
 // ✅ Update user
 export const updateUser = async (userId, userData) => {
-  const { data } = await api.put(`/auth/users/${userId}`, userData);
-  return data;
+  console.log('Updating user:', userId, userData);
+  
+  try {
+    const { data } = await api.put(`/auth/users/${userId}`, userData);
+    console.log('User updated:', data);
+    return data;
+  } catch (error) {
+    console.error('Update user error:', error);
+    throw error;
+  }
 };
 
 // ✅ Delete user
 export const deleteUser = async (userId) => {
-  const { data } = await api.delete(`/auth/users/${userId}`);
-  return data;
+  console.log('Deleting user:', userId);
+  
+  try {
+    const { data } = await api.delete(`/auth/users/${userId}`);
+    console.log('User deleted:', data);
+    return data;
+  } catch (error) {
+    console.error('Delete user error:', error);
+    throw error;
+  }
 };
 
 // ✅ Update user status
 export const updateUserStatus = async (userId, status) => {
-  const { data } = await api.patch(`/auth/users/${userId}/status`, { status });
-  return data;
+  console.log('Updating user status:', userId, status);
+  
+  try {
+    const { data } = await api.patch(`/auth/users/${userId}/status`, { status });
+    return data;
+  } catch (error) {
+    console.error('Update status error:', error);
+    throw error;
+  }
 };
+
 export const updateProfile = async (profileData) => {
+  console.log('Updating profile:', profileData);
+  
   try {
     const { data } = await api.put("/auth/profile", profileData);
-    console.log("data",profileData)
     return { success: true, user: data };
   } catch (err) {
     return {
       success: false,
-      message: err.response?.data?.message,
+      message: err.response?.data?.message || err.message,
     };
   }
 };
 
 // ✅ Get dashboard statistics
 export const getDashboardStats = async () => {
+  console.log('Getting dashboard stats');
+  
   try {
     const { data } = await api.get("/auth/dashboard/stats");
+    console.log('Dashboard stats response:', data);
     return data;
   } catch (error) {
-    console.error('Error fetching dashboard stats:', error);
+    console.error('Get dashboard stats error:', error);
     throw error;
   }
 };
 
 // ✅ Get recently active users
 export const getRecentActiveUsers = async () => {
+  console.log('Getting recent active users');
+  
   try {
     const { data } = await api.get("/auth/users/recent");
+    console.log('Recent active users response:', data);
     return data;
   } catch (error) {
-    console.error('Error fetching recent active users:', error);
+    console.error('Get recent active users error:', error);
     throw error;
   }
 };

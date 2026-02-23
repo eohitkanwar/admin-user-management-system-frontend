@@ -1,111 +1,78 @@
-// src/pages/SignupPage.js
-import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import "../styles/auth.css";
 
-export const SignupPage = () => {
-  const navigate = useNavigate();
-  const { signup } = useAuth();
-  
+const SignupPage = () => {
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: ""
+    username: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
   });
-  const [errors, setErrors] = useState({});
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [submitError, setSubmitError] = useState("");
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
-  const validateForm = () => {
-    const newErrors = {};
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    
-    if (!formData.name.trim()) newErrors.name = "Name is required";
-    if (!formData.email) {
-      newErrors.email = "Email is required";
-    } else if (!emailRegex.test(formData.email)) {
-      newErrors.email = "Please enter a valid email";
-    }
-    if (!formData.password) {
-      newErrors.password = "Password is required";
-    } else if (formData.password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
-    }
-    if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
-    }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleChange = (e) => {
+  // Clear error when user starts typing
+  const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: ""
-      }));
-    }
+    setFormData(prev => ({ ...prev, [name]: value }));
+    if (error) setError('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmitError("");
-    
-    if (!validateForm()) return;
-    
-    setLoading(true);
-    
+    setError('');
+
+    // Validation
+    if (!formData.username || !formData.email || !formData.password || !formData.confirmPassword) {
+      return setError('Please fill in all fields');
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      return setError('Passwords do not match');
+    }
+
+    if (formData.password.length < 6) {
+      return setError('Password must be at least 6 characters long');
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      return setError('Please enter a valid email address');
+    }
+
     try {
-      const payload = {
-        username: formData.name,
-        email: formData.email,
-        password: formData.password,
-      };
+      setLoading(true);
       
-      const response = await signup(payload);
-      
-      if (response.success) {
-        toast.success('Account created successfully! Welcome to your dashboard!', {
-          position: 'top-right',
-          autoClose: 2000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          onClose: () => navigate("/dashboard")
-        });
-      } else {
-        const errorMsg = response.message || "Signup failed. Please try again.";
-        toast.error(errorMsg, {
-          position: 'top-right',
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        });
+      // Create user account
+      const response = await fetch('http://localhost:5000/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Registration failed');
+      }
+
+      // Auto-login after successful registration
+      try {
+        await login(formData.email, formData.password);
+        navigate('/dashboard');
+      } catch (loginError) {
+        // If auto-login fails, redirect to login page
+        navigate('/login');
       }
     } catch (error) {
-      console.error("Signup error:", error);
-      toast.error('An unexpected error occurred. Please try again.', {
-        position: 'top-right',
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
+      const errorMessage = error.message || 'Registration failed';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -113,107 +80,128 @@ export const SignupPage = () => {
 
   return (
     <div className="auth-container">
-      <ToastContainer
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
-      <form onSubmit={handleSubmit} className="auth-form" noValidate>
-        <h2>Create an Account</h2>
-        
-        
-        <div className="form-group">
-          <label htmlFor="name">Full Name</label>
-          <input
-            id="name"
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            className={errors.name ? 'error' : ''}
-            aria-invalid={!!errors.name}
-            aria-describedby={errors.name ? 'name-error' : undefined}
-          />
-          {errors.name && (
-            <span id="name-error" className="error-message">{errors.name}</span>
-          )}
+      <div className="auth-card">
+        <div className="auth-logo">
+          <h1 className="auth-title">Create Account</h1>
+          <p className="auth-subtitle">Sign up to get started</p>
         </div>
-        
-        <div className="form-group">
-          <label htmlFor="email">Email</label>
-          <input
-            id="email"
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            className={errors.email ? 'error' : ''}
-            aria-invalid={!!errors.email}
-            aria-describedby={errors.email ? 'email-error' : undefined}
-          />
-          {errors.email && (
-            <span id="email-error" className="error-message">{errors.email}</span>
-          )}
+
+        {error && (
+          <div className="error-message" role="alert">
+            <svg
+              className="w-5 h-5 flex-shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              ></path>
+            </svg>
+            <span>{error}</span>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="form-group">
+            <label htmlFor="username">Username</label>
+            <input
+              id="username"
+              name="username"
+              type="text"
+              required
+              placeholder="Choose a username"
+              value={formData.username}
+              onChange={handleInputChange}
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="email">Email address</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              required
+              placeholder="Enter your email"
+              value={formData.email}
+              onChange={handleInputChange}
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="password">Password</label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              required
+              placeholder="Create a password"
+              value={formData.password}
+              onChange={handleInputChange}
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="confirmPassword">Confirm Password</label>
+            <input
+              id="confirmPassword"
+              name="confirmPassword"
+              type="password"
+              required
+              placeholder="Confirm your password"
+              value={formData.confirmPassword}
+              onChange={handleInputChange}
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="role">Role</label>
+            <select
+              id="role"
+              name="role"
+              value={formData.role}
+              onChange={handleInputChange}
+              className="form-select"
+            >
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+
+          <div>
+            <button
+              type="submit"
+              className={`btn ${loading ? 'btn-loading' : ''}`}
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <span className="btn-spinner"></span>
+                  Creating account...
+                </>
+              ) : (
+                'Sign Up'
+              )}
+            </button>
+          </div>
+        </form>
+
+        <div className="auth-footer">
+          <p>
+            Already have an account?{' '}
+            <Link to="/login" className="auth-link">
+              Sign in
+            </Link>
+          </p>
         </div>
-        
-        <div className="form-group">
-          <label htmlFor="password">Password</label>
-          <input
-            id="password"
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            className={errors.password ? 'error' : ''}
-            aria-invalid={!!errors.password}
-            aria-describedby={errors.password ? 'password-error' : undefined}
-            autoComplete="new-password"
-          />
-          {errors.password && (
-            <span id="password-error" className="error-message">{errors.password}</span>
-          )}
-        </div>
-        
-        <div className="form-group">
-          <label htmlFor="confirmPassword">Confirm Password</label>
-          <input
-            id="confirmPassword"
-            type="password"
-            name="confirmPassword"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            className={errors.confirmPassword ? 'error' : ''}
-            aria-invalid={!!errors.confirmPassword}
-            aria-describedby={errors.confirmPassword ? 'confirm-password-error' : undefined}
-          />
-          {errors.confirmPassword && (
-            <span id="confirm-password-error" className="error-message">
-              {errors.confirmPassword}
-            </span>
-          )}
-        </div>
-        
-        <button 
-          type="submit" 
-          className="btn" 
-          disabled={loading}
-          aria-busy={loading}
-        >
-          {loading ? "Creating Account..." : "Sign Up"}
-        </button>
-        
-        <p className="auth-footer">
-          Already have an account? <Link to="/login">Log in</Link>
-        </p>
-      </form>
+      </div>
     </div>
   );
 };
 
-export default SignupPage
+export default SignupPage;

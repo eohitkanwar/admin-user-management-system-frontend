@@ -9,7 +9,8 @@ export const useAuth = () => useContext(AuthContext);
 // axios instance
 const api = axios.create({
   baseURL: API_URL,
-});
+    timeout: 25000
+})
 
 // attach token automatically
 api.interceptors.request.use((req) => {
@@ -22,7 +23,7 @@ export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // 🔁 RESTORE USER ON REFRESH (PERSIST LOGIN SESSION)
+  // RESTORE USER ON REFRESH (PERSIST LOGIN SESSION)
   useEffect(() => {
     const userInfo = localStorage.getItem("userInfo");
     const token = localStorage.getItem("token");
@@ -36,16 +37,12 @@ export function AuthProvider({ children }) {
     setLoading(false);
   }, []);
 
-  // LOGIN (Admin Only)
+  // LOGIN (Allow both admin and regular users)
   const login = async (email, password) => {
     try {
       const { data } = await api.post("/auth/login", { email, password });
 
-      // Check if user is admin
-      if (data.user && data.user.role !== 'admin') {
-        throw new Error("Access denied. Admin privileges required.");
-      }
-
+      // Store user data regardless of role
       localStorage.setItem("userInfo", JSON.stringify(data.user));
       localStorage.setItem("token", data.token);
       setCurrentUser(data.user);
@@ -62,7 +59,7 @@ export function AuthProvider({ children }) {
     setCurrentUser(null);
   };
 
-  // password helpers (unchanged)
+  // password helpers
   const forgotPassword = async (email) => {
     try {
       const { data } = await api.post("/auth/forgot-password", { email });
