@@ -174,12 +174,9 @@ const LoginPage = () => {
         </form>
 
         <div className="form-footer">
-          <div className="flex justify-between items-center">
+          <div className="flex justify-center">
             <Link to="/forgot-password" className="text-primary hover:underline">
               Forgot your password?
-            </Link>
-            <Link to="/signup" className="text-primary hover:underline">
-              Create account
             </Link>
           </div>
         </div>

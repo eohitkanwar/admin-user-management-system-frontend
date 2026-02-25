@@ -5,7 +5,6 @@ import Dashboard from "./pages/Dashboard";
 import UserManagement from "./pages/UserManagement";
 import EditUserPage from "./pages/dashboard/EditUserPage";
 import LoginPage from "./pages/LoginPage";
-import SignupPage from "./pages/SignupPage";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Profile from "./pages/Profile";
@@ -20,9 +19,6 @@ function App() {
     <Routes>
       {/* Admin Login - Only Route */}
       <Route path="/login" element={!isAuthenticated ? <LoginPage /> : <Navigate to="/dashboard" />} />
-      
-      {/* Signup - Public Route */}
-      <Route path="/signup" element={!isAuthenticated ? <SignupPage /> : <Navigate to="/dashboard" />} />
       
       {/* Forgot & Reset Password - Public Routes */}
       <Route path="/forgot-password" element={<ForgotPassword />} />
