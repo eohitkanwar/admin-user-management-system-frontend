@@ -6,7 +6,7 @@ export const getUserById = async (userId) => {
   console.log('Getting user by ID:', userId);
   
   try {
-    const { data } = await api.get(`/auth/users/${userId}`);
+    const { data } = await api.get(`/users/${userId}`);
     console.log('User found:', data);
     return data;
   } catch (error) {
@@ -20,7 +20,7 @@ export const getUsers = async (page = 1, limit = 6, search = '') => {
   console.log('Fetching users with:', { page, limit, search });
   
   try {
-    const { data } = await api.get(`/auth/users?page=${page}&limit=${limit}&search=${search}`);
+    const { data } = await api.get(`/users?page=${page}&limit=${limit}&search=${search}`);
     console.log('API Response:', data);
     return data;
   } catch (error) {
@@ -31,14 +31,49 @@ export const getUsers = async (page = 1, limit = 6, search = '') => {
 
 // ✅ Create user (if backend supports it)
 export const createUser = async (userData) => {
-  console.log('Creating user:', userData);
+  console.log('=== USER SERVICES CREATE USER START ==='); // Debug
+  console.log('Creating user:', userData); // Debug
+  console.log('API URL:', `${api.defaults.baseURL}/auth/users`); // Debug
+  console.log('Full API URL:', `${api.defaults.baseURL}/auth/users`); // Debug
+  console.log('Request headers:', {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${localStorage.getItem('token')}`
+  }); // Debug
+  console.log('Token available:', !!localStorage.getItem('token')); // Debug
+  console.log('Token value:', localStorage.getItem('token')?.substring(0, 20) + '...'); // Debug (first 20 chars)
   
   try {
-    const { data } = await api.post("/auth/users", userData);
-    console.log('User created:', data);
+    console.log('=== MAKING API REQUEST ==='); // Debug
+    console.log('Request method:', 'POST'); // Debug
+    console.log('Request endpoint:', '/users'); // Debug
+    console.log('Request payload:', userData); // Debug
+    console.log('Request config:', {
+      method: 'POST',
+      url: `${api.defaults.baseURL}/users`,
+      data: userData,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    }); // Debug
+    
+    const { data } = await api.post("/users", userData);
+    console.log('=== API RESPONSE RECEIVED ==='); // Debug
+    console.log('Response status:', data); // Debug
+    console.log('User created:', data); // Debug
     return data;
   } catch (error) {
-    console.error('Create user error:', error);
+    console.log('=== USER SERVICES CREATE USER ERROR ==='); // Debug
+    console.error('Create user error:', error); // Debug
+    console.error('Error details:', {
+      message: error.message,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      config: error.config,
+      code: error.code
+    }); // Debug error details
+    console.error('Full error object:', error); // Debug full error
     throw error;
   }
 };
@@ -48,7 +83,7 @@ export const updateUser = async (userId, userData) => {
   console.log('Updating user:', userId, userData);
   
   try {
-    const { data } = await api.put(`/auth/users/${userId}`, userData);
+    const { data } = await api.put(`/users/${userId}`, userData);
     console.log('User updated:', data);
     return data;
   } catch (error) {
@@ -62,7 +97,7 @@ export const deleteUser = async (userId) => {
   console.log('Deleting user:', userId);
   
   try {
-    const { data } = await api.delete(`/auth/users/${userId}`);
+    const { data } = await api.delete(`/users/${userId}`);
     console.log('User deleted:', data);
     return data;
   } catch (error) {
@@ -76,7 +111,7 @@ export const updateUserStatus = async (userId, status) => {
   console.log('Updating user status:', userId, status);
   
   try {
-    const { data } = await api.patch(`/auth/users/${userId}/status`, { status });
+    const { data } = await api.patch(`/users/${userId}/status`, { status });
     return data;
   } catch (error) {
     console.error('Update status error:', error);
@@ -117,7 +152,7 @@ export const getRecentActiveUsers = async () => {
   console.log('Getting recent active users');
   
   try {
-    const { data } = await api.get("/auth/users/recent");
+    const { data } = await api.get("/users/recent");
     console.log('Recent active users response:', data);
     return data;
   } catch (error) {

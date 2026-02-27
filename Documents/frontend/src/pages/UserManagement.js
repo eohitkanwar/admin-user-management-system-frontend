@@ -45,7 +45,7 @@ const isAdmin = userInfo?.role === "admin";  //   userInfo.role === "admin" ||
   
   console.log('UserManagement - isAdmin check:', { userInfo, role: userInfo?.role, isAdmin }); // Debug
 
-  // 🔹 FETCH USERS
+  // 🔹 FETCH USERS (MUST BE BEFORE useEffect)
   const fetchUsers = useCallback(async (page, search) => {
     console.log('=== FETCH USERS START ==='); // Debug
     console.log('fetchUsers called with:', { page, search, loading, error }); // Debug log
@@ -112,81 +112,7 @@ const isAdmin = userInfo?.role === "admin";  //   userInfo.role === "admin" ||
     }
   }, []);
 
-  // 🔹 USE EFFECT FOR FETCHING USERS
-  useEffect(() => {
-    console.log('useEffect triggered!'); // Debug
-    console.log('isAdmin:', isAdmin); // Debug
-    console.log('currentPage:', currentPage); // Debug
-    console.log('searchTerm:', searchTerm); // Debug
-    console.log('fetchUsers function:', typeof fetchUsers); // Debug
-    
-    if (isAdmin) {
-      console.log('useEffect - calling fetchUsers'); // Debug
-      fetchUsers(currentPage, searchTerm);
-    } else {
-      console.log('useEffect - isAdmin is false, skipping fetchUsers'); // Debug
-    }
-  }, [isAdmin, currentPage, searchTerm, fetchUsers]);
-
-  // ❌ ACCESS DENIED UI (AFTER HOOKS ✔️)
-  if (!isAdmin) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <div className="p-8 text-center bg-white rounded-xl shadow">
-          <div className="flex items-center justify-center w-16 h-16 mx-auto rounded-full bg-red-100">
-            <FiShield className="w-8 h-8 text-red-600" />
-          </div>
-          <h2 className="mt-4 text-xl font-semibold text-gray-800">
-            Access Denied
-          </h2>
-          <p className="mt-2 text-gray-600">
-            Admin access only
-          </p>
-        </div>
-      </div>
-    );
-  }
-const handleSearch = (e) => {
-  const newSearchTerm = e.target.value;
-  console.log('Search triggered, setting loading to true'); // Debug log
-  setLoading(true); // Show loading immediately for search
-  setSearchTerm(newSearchTerm);
-  setCurrentPage(1); // Reset to first page when searching
-  // fetchUsers will be called by useEffect with loading
-};
-
-// 🔹 PAGINATION HANDLERS WITH LOADING
-const handlePageChange = (page) => {
-  console.log('Pagination triggered, setting loading to true'); // Debug log
-  setLoading(true); // Show loading immediately
-  setCurrentPage(page);
-  // fetchUsers will be called by useEffect with loading
-};
-
-// 🔹 DELETE USER WITH LOADING
-const confirmDelete = async () => {
-  if (!deleteUserData?._id) {
-    toast.error("Invalid user data");
-    return;
-  }
-  
-  try {
-    setLoading(true); // Show loading for delete
-    await deleteUser(deleteUserData._id);
-    toast.success("User deleted successfully");
-    setShowDeleteModal(false);
-    setDeleteUserData(null);
-    fetchUsers(currentPage, searchTerm); // This will show loading again
-  } catch (error) {
-    toast.error(error.response?.data?.message || "Failed to delete user");
-  } finally {
-    setTimeout(() => {
-      setLoading(false);
-    }, 2000);
-  }
-};
-
-
+  // 🔹 USE EFFECT FOR FETCHING USERS (MUST BE BEFORE ANY CONDITIONAL RETURNS)
   useEffect(() => {
     console.log('useEffect triggered!'); // Debug
     console.log('isAdmin:', isAdmin); // Debug
@@ -203,6 +129,24 @@ const confirmDelete = async () => {
       console.log('useEffect - isAdmin is false, skipping fetchUsers'); // Debug
     }
   }, [isAdmin, currentPage, searchTerm, fetchUsers]);
+
+  // 🔹 SEARCH HANDLER WITH LOADING (AFTER HOOKS ✔️)
+  const handleSearch = (e) => {
+    const newSearchTerm = e.target.value;
+    console.log('Search triggered, setting loading to true'); // Debug log
+    setLoading(true); // Show loading immediately for search
+    setSearchTerm(newSearchTerm);
+    setCurrentPage(1); // Reset to first page when searching
+    // fetchUsers will be called by useEffect with loading
+  };
+
+  // 🔹 PAGINATION HANDLERS WITH LOADING
+  const handlePageChange = (page) => {
+    console.log('Pagination triggered, setting loading to true'); // Debug log
+    setLoading(true); // Show loading immediately
+    setCurrentPage(page);
+    // fetchUsers will be called by useEffect with loading
+  };
 
   // 🔹 PAGINATION
   const indexOfLastUser = currentPage * USERS_PER_PAGE;
@@ -227,6 +171,29 @@ const confirmDelete = async () => {
   const handleDeleteClick = (user) => {
     setDeleteUserData(user);
     setShowDeleteModal(true);
+  };
+
+  // Handle confirm delete
+  const confirmDelete = async () => {
+    if (!deleteUserData?._id) {
+      toast.error("Invalid user data");
+      return;
+    }
+  
+    try {
+      setLoading(true); // Show loading for delete
+      await deleteUser(deleteUserData._id);
+      toast.success("User deleted successfully");
+      setShowDeleteModal(false);
+      setDeleteUserData(null);
+      fetchUsers(currentPage, searchTerm); // This will show loading again
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to delete user");
+    } finally {
+      setTimeout(() => {
+        setLoading(false);
+      }, 2000);
+    }
   };
 
   // Handle add user
@@ -276,31 +243,51 @@ const confirmDelete = async () => {
     try {
       setLoading(true);
       setError(null);
+      console.log('=== USER CREATION START ==='); // Debug
       console.log('Creating user with data:', newUser); // Debug log
       console.log('Current user token:', localStorage.getItem('token')); // Debug log
       console.log('Current user info:', localStorage.getItem('userInfo')); // Debug log
+      console.log('Backend API URL:', 'http://localhost:5000/api/auth/users'); // Debug
+      console.log('Network status:', navigator.onLine ? 'Online' : 'Offline'); // Debug
       
       // Call the actual API to create user
+      console.log('=== CALLING CREATE USER API ==='); // Debug
+      console.log('Making POST request to:', 'http://localhost:5000/api/auth/users'); // Debug
+      console.log('Request data:', JSON.stringify(newUser, null, 2)); // Debug
+      
       const response = await createUser(newUser);
+      console.log('=== CREATE USER API RESPONSE ==='); // Debug
       console.log('User created successfully:', response); // Debug log
       
       // Send welcome email
+      console.log('=== SENDING WELCOME EMAIL ==='); // Debug
+      console.log('Sending welcome email to:', newUser.email); // Debug
       const emailResult = await sendWelcomeEmail(newUser);
+      console.log('=== EMAIL SEND RESPONSE ==='); // Debug
+      console.log('Email result:', emailResult); // Debug log
+      
       if (emailResult.success) {
+        console.log('Welcome email sent successfully'); // Debug
         toast.success("User added successfully! Welcome email sent.");
       } else {
+        console.log('Welcome email failed to send:', emailResult.message); // Debug
         toast.success("User added successfully! (Welcome email failed to send)");
         console.warn('Welcome email failed:', emailResult.message);
       }
       
       setShowAddUserModal(false);
       setNewUser({ username: "", email: "", password: "", role: "user" });
+      console.log('=== REFRESHING USER LIST ==='); // Debug
       fetchUsers(currentPage, searchTerm); // Refresh user list
+      console.log('=== USER CREATION COMPLETE ==='); // Debug
     } catch (error) {
+      console.log('=== USER CREATION ERROR ==='); // Debug
       console.error('Error creating user:', error); // Debug error
       console.error('Error response:', error.response); // Debug error response
       console.error('Error status:', error.response?.status); // Debug error status
       console.error('Error data:', error.response?.data); // Debug error data
+      console.error('Error code:', error.code); // Debug error code
+      console.error('Error message:', error.message); // Debug error message
       
       setError(error);
       const errorMessage = error.response?.data?.message || error.message || "Failed to add user";
