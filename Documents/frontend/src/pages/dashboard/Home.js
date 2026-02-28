@@ -25,7 +25,7 @@ const Home = () => {
       
       // Fetch all users to calculate statistics
       const usersData = await getUsers();
-      console.log("---", userData);
+      console.log("---", usersData);
       // const usersData = await usersResponse.json();
       
       // Calculate statistics from users data
