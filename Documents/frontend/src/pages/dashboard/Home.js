@@ -1,7 +1,7 @@
 // src/pages/dashboard/Home.js
 
 import React, { useState, useEffect } from 'react';
-import { getDashboardStats, getRecentActiveUsers } from '../../services/userServices';
+import { getDashboardStats, getRecentActiveUsers, getUsers } from '../../services/userServices';
 import '../../styles/dashboard.css';
 
 const Home = () => {
@@ -24,12 +24,8 @@ const Home = () => {
       setLoading(true);
       
       // Fetch all users to calculate statistics
-      const usersResponse = await fetch('http://localhost:5000/api/auth/users', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      const usersData = await usersResponse.json();
+      const usersData = await getUsers();
+      // const usersData = await usersResponse.json();
       
       // Calculate statistics from users data
       const users = Array.isArray(usersData) ? usersData : usersData.users || [];
