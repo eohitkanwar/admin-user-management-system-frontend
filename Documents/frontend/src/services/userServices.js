@@ -83,7 +83,7 @@ export const updateUser = async (userId, userData) => {
   console.log('Updating user:', userId, userData);
   
   try {
-    const { data } = await api.put(`/users/${userId}`, userData);
+    const { data } = await api.put(`auth/users/${userId}`, userData);
     console.log('User updated:', data);
     return data;
   } catch (error) {
