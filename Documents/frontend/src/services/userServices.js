@@ -20,7 +20,7 @@ export const getUsers = async (page = 1, limit = 6, search = '') => {
   console.log('Fetching users with:', { page, limit, search });
   
   try {
-    const { data } = await api.get(`/users?page=${page}&limit=${limit}&search=${search}`);
+    const { data } = await api.get(`/auth/users?page=${page}&limit=${limit}&search=${search}`);
     console.log('API Response:', data);
     return data;
   } catch (error) {
