@@ -64,19 +64,10 @@ const Dashboard = () => {
     }
   };
 
-  // Show welcome message on component mount
+  // Show welcome message on component mount (only when navigating directly to dashboard)
   useEffect(() => {
-    if (currentUser) {
-      toast.success(`login Successfully,${currentUser.name || 'User'}!`, {
-        position: 'top-right',
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
-    }
-  }, [currentUser]);
+    // Remove automatic welcome message to prevent duplicate toasts
+  }, []);
 
   // Check if current route is active
   const isActive = (path) => {

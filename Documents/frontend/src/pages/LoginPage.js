@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { toast } from 'react-toastify';
 import "../styles/auth.css";
 
 const LoginPage = () => {
@@ -79,6 +80,15 @@ const LoginPage = () => {
         console.log('Login successful, navigating to dashboard'); // Debug
         // Clear error before navigation
         setError('');
+        // Show success toast
+        toast.success(`Login Successfully, ${response.user?.name || 'User'}!`, {
+          position: 'top-right',
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
         navigate('/dashboard');
       } else {
         console.log('No response from login'); // Debug
