@@ -42,6 +42,8 @@ const Dashboard = () => {
   const handleLogout = async () => {
     try {
       await logout();
+      // Clear any existing toasts before showing logout toast
+      toast.dismiss();
       toast.success('Successfully logged out', {
         position: 'top-right',
         autoClose: 2000,
@@ -66,7 +68,8 @@ const Dashboard = () => {
 
   // Show welcome message on component mount (only when navigating directly to dashboard)
   useEffect(() => {
-    // Remove automatic welcome message to prevent duplicate toasts
+    // Clear all existing toasts to prevent showing logout toast on login
+    toast.dismiss();
   }, []);
 
   // Check if current route is active

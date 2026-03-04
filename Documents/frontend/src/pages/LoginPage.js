@@ -80,6 +80,8 @@ const LoginPage = () => {
         console.log('Login successful, navigating to dashboard'); // Debug
         // Clear error before navigation
         setError('');
+        // Clear any existing toasts before showing login success
+        toast.dismiss();
         // Show success toast
         toast.success(`Login Successfully, ${response.user?.name || 'User'}!`, {
           position: 'top-right',
