@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 import "../styles/auth.css";
@@ -12,6 +12,7 @@ const LoginPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Clear error on component mount and when dependencies change
   useEffect(() => {
@@ -19,6 +20,18 @@ const LoginPage = () => {
     setError('');
     setIsSubmitting(false);
     setLoading(false);
+    
+    // Check if user was redirected from logout
+    if (location.state?.fromLogout) {
+      toast.success('Successfully logged out', {
+        position: 'top-right',
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+    }
   }, []);
 
   // Monitor error state changes
@@ -82,8 +95,9 @@ const LoginPage = () => {
         setError('');
         // Clear any existing toasts before showing login success
         toast.dismiss();
-        // Show success toast
-        toast.success(`Login Successfully, ${response.user?.name || 'User'}!`, {
+        // Show success toast with user's proper name
+        const userName = response.user?.name || response.user?.username || 'User';
+        toast.success(`${userName} logged in successfully!`, {
           position: 'top-right',
           autoClose: 3000,
           hideProgressBar: false,

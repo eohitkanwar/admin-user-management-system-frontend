@@ -42,17 +42,8 @@ const Dashboard = () => {
   const handleLogout = async () => {
     try {
       await logout();
-      // Clear any existing toasts before showing logout toast
-      toast.dismiss();
-      toast.success('Successfully logged out', {
-        position: 'top-right',
-        autoClose: 2000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        onClose: () => navigate('/login')
-      });
+      // Navigate to login page with state to show logout toast
+      navigate('/login', { state: { fromLogout: true } });
     } catch (error) {
       console.error('Failed to log out', error);
       toast.error('Failed to log out. Please try again.', {
