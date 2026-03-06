@@ -23,13 +23,16 @@ const Home = () => {
     try {
       setLoading(true);
       
-      // Fetch dashboard statistics from backend
-      const dashboardStats = await getDashboardStats();
-      console.log("Dashboard stats from API:", dashboardStats);
-      
-      // Fetch recent users for activity list
+      // Fetch users data (this API works and returns totalUsers)
       const usersData = await getUsers();
+      console.log("Users data from API:", usersData);
+      
+      // Extract data from response - backend returns totalUsers and count
       const users = Array.isArray(usersData) ? usersData : usersData.users || [];
+      const totalUsers = usersData.totalUsers || users.length;
+      const totalAdminUsers = usersData.totalAdminUsers || users.filter(user => user.role === 'admin').length;
+      const totalNonAdminUsers = usersData.totalNonAdminUsers || (totalUsers - totalAdminUsers);
+      const recentlyActiveUsers = usersData.recentlyActiveUsers || 0;
       
       // Get recent users for activity list
       const recentActivityUsers = users
@@ -37,12 +40,11 @@ const Home = () => {
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
         .slice(0, 5);
 
-      // Use stats from backend API response
       setStats({
-        totalUsers: dashboardStats.totalUsers || dashboardStats.count || 0,
-        totalAdminUsers: dashboardStats.totalAdminUsers || 0,
-        totalNonAdminUsers: dashboardStats.totalNonAdminUsers || 0,
-        recentlyActiveUsers: dashboardStats.recentlyActiveUsers || 0
+        totalUsers,
+        totalAdminUsers,
+        totalNonAdminUsers,
+        recentlyActiveUsers
       });
       
       setRecentUsers(recentActivityUsers);
