@@ -46,6 +46,7 @@ const LoginPage = () => {
     if (error) {
       console.log('Clearing error on email change'); // Debug
       setError('');
+      toast.dismiss(); // Clear any error toasts
     }
   };
 
@@ -54,6 +55,7 @@ const LoginPage = () => {
     if (error) {
       console.log('Clearing error on password change'); // Debug
       setError('');
+      toast.dismiss(); // Clear any error toasts
     }
   };
 
@@ -112,8 +114,33 @@ const LoginPage = () => {
       }
     } catch (error) {
       console.error('Login error caught:', error); // Debug
-      const errorMessage = error.message || 'Login failed';
+      
+      // Extract specific error message from API response
+      let errorMessage = 'Login failed';
+      
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response?.status === 401) {
+        errorMessage = 'Invalid email or password';
+      } else if (error.response?.status === 404) {
+        errorMessage = 'User not found';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       console.error('Setting error message:', errorMessage); // Debug
+      
+      // Show error toast notification
+      toast.error(errorMessage, {
+        position: 'top-right',
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      
+      // Also set error state for UI display
       setError(errorMessage);
     } finally {
       setLoading(false);
