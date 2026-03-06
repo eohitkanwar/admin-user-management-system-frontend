@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat-APP</title>
+</head>
+
+<body>
+    <div id="chat"></div>
+    <input id="input" placeholder="type message....." />
+    <button onclick="send()" Send></button>
+    
+    <script>
+        const socket = new WebSocket('ws://localhost:3000')
+
+        socket.onmessage = async (e) => {
+            const div = document.getElementById('chat')
+
+            if (e.data instanceof Blob) {
+                const text = await e.data.text()
+                console.log("==========",text)
+                div.innerHTML += `<p>${text} </p>`
+
+            } else {
+
+                div.innerHTML += `<p>${e.data} </p>`
+            }
+        }
+        function send() {
+            const input = document.getElementById('input')
+            socket.send(input.value)
+            input.value = ''
+        }
+    </script>
+
+
+</body>
+
+</html>

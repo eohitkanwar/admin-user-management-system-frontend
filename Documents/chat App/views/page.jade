@@ -1,0 +1,12 @@
+doctype html 
+html 
+
+   head 
+     script (src= "/socket.io/socket.io.js")
+     script (src="/chat.js")
+
+     body 
+      h1 Chat Room
+      #chat
+      input(type="text",id="messageInput")
+      button (onclick="sendMessage()") Send 

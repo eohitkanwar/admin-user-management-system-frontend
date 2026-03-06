@@ -6,7 +6,7 @@ export const getUserById = async (userId) => {
   console.log('Getting user by ID:', userId);
   
   try {
-    const { data } = await api.get(`/users/${userId}`);
+    const { data } = await api.get(`/auth/users/${userId}`);
     console.log('User found:', data);
     return data;
   } catch (error) {
@@ -20,7 +20,7 @@ export const getUsers = async (page = 1, limit = 6, search = '') => {
   console.log('Fetching users with:', { page, limit, search });
   
   try {
-    const { data } = await api.get(`/auth/users?page=${page}&limit=${limit}&search=${search}`);
+    const { data } = await api.get(`/users?page=${page}&limit=${limit}&search=${search}`);
     console.log('API Response:', data);
     return data;
   } catch (error) {
@@ -45,7 +45,7 @@ export const createUser = async (userData) => {
   try {
     console.log('=== MAKING API REQUEST ==='); // Debug
     console.log('Request method:', 'POST'); // Debug
-    console.log('Request endpoint:', '/users'); // Debug
+    console.log('Request endpoint:', '/auth/users'); // Debug
     console.log('Request payload:', userData); // Debug
     console.log('Request config:', {
       method: 'POST',
@@ -83,7 +83,7 @@ export const updateUser = async (userId, userData) => {
   console.log('Updating user:', userId, userData);
   
   try {
-    const { data } = await api.put(`/auth/users/${userId}`, userData);
+    const { data } = await api.put(`/users/${userId}`, userData);
     console.log('User updated:', data);
     return data;
   } catch (error) {
@@ -97,7 +97,7 @@ export const deleteUser = async (userId) => {
   console.log('Deleting user:', userId);
   
   try {
-    const { data } = await api.delete(`/auth/users/${userId}`);
+    const { data } = await api.delete(`/users/${userId}`);
     console.log('User deleted:', data);
     return data;
   } catch (error) {
@@ -111,7 +111,7 @@ export const updateUserStatus = async (userId, status) => {
   console.log('Updating user status:', userId, status);
   
   try {
-    const { data } = await api.patch(`/auth/users/${userId}/status`, { status });
+    const { data } = await api.patch(`/users/${userId}/status`, { status });
     return data;
   } catch (error) {
     console.error('Update status error:', error);
@@ -123,7 +123,7 @@ export const updateProfile = async (profileData) => {
   console.log('Updating profile:', profileData);
   
   try {
-    const { data } = await api.put("/auth/profile", profileData);
+    const { data } = await api.put("/profile", profileData);
     return { success: true, user: data };
   } catch (err) {
     return {
@@ -138,7 +138,7 @@ export const getDashboardStats = async () => {
   console.log('Getting dashboard stats');
   
   try {
-    const { data } = await api.get("/auth/dashboard/stats");
+    const { data } = await api.get("/dashboard/stats");
     console.log('Dashboard stats response:', data);
     return data;
   } catch (error) {
@@ -152,7 +152,7 @@ export const getRecentActiveUsers = async () => {
   console.log('Getting recent active users');
   
   try {
-    const { data } = await api.get("/auth/users/recent");
+    const { data } = await api.get("/users/recent");
     console.log('Recent active users response:', data);
     return data;
   } catch (error) {
