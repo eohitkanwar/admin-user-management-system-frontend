@@ -31,9 +31,18 @@ const Home = () => {
       const users = Array.isArray(usersData) ? usersData : usersData.users || [];
       const totalUsers = usersData.totalUsers || users.length;
       
+      // Debug: Log all users and their roles
+      console.log("All users:", users);
+      console.log("User roles:", users.map(u => ({ email: u.email, role: u.role })));
+      
       // Calculate statistics from the users array
       const totalAdminUsers = users.filter(user => user.role === 'admin').length;
       const totalNonAdminUsers = totalUsers - totalAdminUsers;
+      
+      // Debug: Log admin users found
+      const adminUsers = users.filter(user => user.role === 'admin');
+      console.log("Admin users found:", adminUsers);
+      console.log("Admin count:", totalAdminUsers);
       
       // Get recently active users (last 24 hours or based on lastLogin)
       const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
