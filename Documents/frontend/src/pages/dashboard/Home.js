@@ -23,16 +23,26 @@ const Home = () => {
     try {
       setLoading(true);
       
-      // Fetch users data (this API works and returns totalUsers)
-      const usersData = await getUsers();
+      // Fetch all users without pagination to get complete data
+      const usersData = await getUsers(1, 1000, ''); // Get up to 1000 users (all users)
       console.log("Users data from API:", usersData);
       
       // Extract data from response - backend returns totalUsers and count
       const users = Array.isArray(usersData) ? usersData : usersData.users || [];
       const totalUsers = usersData.totalUsers || users.length;
-      const totalAdminUsers = usersData.totalAdminUsers || users.filter(user => user.role === 'admin').length;
-      const totalNonAdminUsers = usersData.totalNonAdminUsers || (totalUsers - totalAdminUsers);
-      const recentlyActiveUsers = usersData.recentlyActiveUsers || 0;
+      
+      // Calculate statistics from the users array
+      const totalAdminUsers = users.filter(user => user.role === 'admin').length;
+      const totalNonAdminUsers = totalUsers - totalAdminUsers;
+      
+      // Get recently active users (last 24 hours or based on lastLogin)
+      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const recentlyActiveUsers = users.filter(user => {
+        if (user.lastLogin) {
+          return new Date(user.lastLogin) > twentyFourHoursAgo;
+        }
+        return false;
+      }).length;
       
       // Get recent users for activity list
       const recentActivityUsers = users
