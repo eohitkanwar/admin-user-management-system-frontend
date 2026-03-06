@@ -6,7 +6,7 @@ export const getUserById = async (userId) => {
   console.log('Getting user by ID:', userId);
   
   try {
-    const { data } = await api.get(`/auth/users/${userId}`);
+    const { data } = await api.get(`/api/auth/users/${userId}`);
     console.log('User found:', data);
     return data;
   } catch (error) {
@@ -20,7 +20,7 @@ export const getUsers = async (page = 1, limit = 6, search = '') => {
   console.log('Fetching users with:', { page, limit, search });
   
   try {
-    const { data } = await api.get(`/auth/users?page=${page}&limit=${limit}&search=${search}`);
+    const { data } = await api.get(`/api/auth/users?page=${page}&limit=${limit}&search=${search}`);
     console.log('API Response:', data);
     return data;
   } catch (error) {
@@ -57,7 +57,7 @@ export const createUser = async (userData) => {
       }
     }); // Debug
     
-    const { data } = await api.post("/auth/users", userData);
+    const { data } = await api.post("api/auth/users", userData);
     console.log('=== API RESPONSE RECEIVED ==='); // Debug
     console.log('Response status:', data); // Debug
     console.log('User created:', data); // Debug

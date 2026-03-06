@@ -40,7 +40,7 @@ export function AuthProvider({ children }) {
   // LOGIN (Allow both admin and regular users)
   const login = async (email, password) => {
     try {
-      const { data } = await api.post("api/auth/login", { email, password });
+      const { data } = await api.post("/api/auth/login", { email, password });
 
       // Store user data regardless of role
       localStorage.setItem("userInfo", JSON.stringify(data.user));
@@ -62,7 +62,7 @@ export function AuthProvider({ children }) {
   // password helpers
   const forgotPassword = async (email) => {
     try {
-      const { data } = await api.post("/auth/forgot-password", { email });
+      const { data } = await api.post("/api/auth/forgot-password", { email });
       return { success: true, message: data.data };
     } catch (err) {
       return { success: false, message: err.response?.data?.message };
@@ -72,7 +72,7 @@ export function AuthProvider({ children }) {
   const resetPassword = async (token, password) => {
     try {
       const { data } = await api.put(
-        `/auth/reset-password/${token}`,
+        `/api/auth/reset-password/${token}`,
         { password }
       );
       return { success: true, message: data.message };
