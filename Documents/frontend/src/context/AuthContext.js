@@ -40,7 +40,7 @@ export function AuthProvider({ children }) {
   // LOGIN (Allow both admin and regular users)
   const login = async (email, password) => {
     try {
-      const { data } = await api.post("/auth/login", { email, password });
+      const { data } = await api.post("api/auth/login", { email, password });
 
       // Store user data regardless of role
       localStorage.setItem("userInfo", JSON.stringify(data.user));
