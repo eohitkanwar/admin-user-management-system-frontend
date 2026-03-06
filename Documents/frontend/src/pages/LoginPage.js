@@ -14,6 +14,12 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Email validation function
+  const isValidEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
   // Clear error on component mount and when dependencies change
   useEffect(() => {
     console.log('LoginPage mounted, clearing error'); // Debug
@@ -42,15 +48,27 @@ const LoginPage = () => {
 
   // Clear toast when user starts typing
   const handleEmailChange = (e) => {
-    setEmail(e.target.value);
+    const newEmail = e.target.value;
+    setEmail(newEmail);
+    
     // Clear any error toasts when user starts typing
     toast.dismiss();
+    
+    // Real-time email validation
+    if (newEmail && !isValidEmail(newEmail)) {
+      setError('Invalid email format');
+    } else {
+      setError('');
+    }
   };
 
   const handlePasswordChange = (e) => {
     setPassword(e.target.value);
     // Clear any error toasts when user starts typing
     toast.dismiss();
+    if (error && error.includes('email')) {
+      setError('');
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -74,6 +92,21 @@ const LoginPage = () => {
       console.log('Validation failed: empty fields'); // Debug
       setIsSubmitting(false);
       return setError('Please fill in all fields');
+    }
+
+    // Validate email format
+    if (!isValidEmail(email)) {
+      console.log('Validation failed: invalid email format'); // Debug
+      setIsSubmitting(false);
+      toast.error('Invalid email format. Please enter a valid email address.', {
+        position: 'top-right',
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      return setError('Invalid email format');
     }
 
     console.log('Validation passed, proceeding with login...'); // Debug
