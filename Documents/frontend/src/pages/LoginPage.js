@@ -40,23 +40,17 @@ const LoginPage = () => {
     console.trace('Error state change stack trace'); // Debug
   }, [error]);
 
-  // Clear error when user starts typing
+  // Clear toast when user starts typing
   const handleEmailChange = (e) => {
     setEmail(e.target.value);
-    if (error) {
-      console.log('Clearing error on email change'); // Debug
-      setError('');
-      toast.dismiss(); // Clear any error toasts
-    }
+    // Clear any error toasts when user starts typing
+    toast.dismiss();
   };
 
   const handlePasswordChange = (e) => {
     setPassword(e.target.value);
-    if (error) {
-      console.log('Clearing error on password change'); // Debug
-      setError('');
-      toast.dismiss(); // Clear any error toasts
-    }
+    // Clear any error toasts when user starts typing
+    toast.dismiss();
   };
 
   const handleSubmit = async (e) => {
@@ -130,7 +124,7 @@ const LoginPage = () => {
       
       console.error('Setting error message:', errorMessage); // Debug
       
-      // Show error toast notification
+      // Show error toast notification only (no UI error box)
       toast.error(errorMessage, {
         position: 'top-right',
         autoClose: 5000,
@@ -140,8 +134,8 @@ const LoginPage = () => {
         draggable: true,
       });
       
-      // Also set error state for UI display
-      setError(errorMessage);
+      // Don't set error state to avoid showing red box
+      setError('');
     } finally {
       setLoading(false);
       setIsSubmitting(false);
@@ -161,25 +155,7 @@ const LoginPage = () => {
         {/* Debug: Show current error state */}
         {console.log('Rendering LoginPage, current error:', error)}
         
-        {error && (
-          <div className="error-message" role="alert">
-            <svg
-              className="w-5 h-5 flex-shrink-0"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              ></path>
-            </svg>
-            <span>{error}</span>
-          </div>
-        )}
+        {/* Error box removed - now using toast notifications only */}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="form-group">
