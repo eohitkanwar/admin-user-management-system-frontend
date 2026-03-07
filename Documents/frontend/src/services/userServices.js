@@ -6,6 +6,7 @@ export const getUserById = async (userId) => {
   console.log('Getting user by ID:', userId);
   
   try {
+    console.log("-------",process.env.REACT_APP_API_URL);
     const { data } = await api.get(`/api/auth/users/${userId}`);
     console.log('User found:', data);
     return data;
@@ -57,7 +58,7 @@ export const createUser = async (userData) => {
       }
     }); // Debug
     
-    const { data } = await api.post("api/auth/users", userData);
+    const { data } = await api.post("/api/auth/users", userData);
     console.log('=== API RESPONSE RECEIVED ==='); // Debug
     console.log('Response status:', data); // Debug
     console.log('User created:', data); // Debug
@@ -123,7 +124,7 @@ export const updateProfile = async (profileData) => {
   console.log('Updating profile:', profileData);
   
   try {
-    const { data } = await api.put("api/auth/profile", profileData);
+    const { data } = await api.put("/api/auth/profile", profileData);
     return { success: true, user: data };
   } catch (err) {
     return {
@@ -138,7 +139,7 @@ export const getDashboardStats = async () => {
   console.log('Getting dashboard stats');
   
   try {
-    const { data } = await api.get("api/auth/dashboard/stats");
+    const { data } = await api.get("/api/auth/dashboard/stats");
     console.log('Dashboard stats response:', data);
     return data;
   } catch (error) {
@@ -152,7 +153,7 @@ export const getRecentActiveUsers = async () => {
   console.log('Getting recent active users');
   
   try {
-    const { data } = await api.get("api/auth/users/recent");
+    const { data } = await api.get("/api/auth/users/recent");
     console.log('Recent active users response:', data);
     return data;
   } catch (error) {
