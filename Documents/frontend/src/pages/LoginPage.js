@@ -141,23 +141,42 @@ const LoginPage = () => {
       }
     } catch (error) {
       console.error('Login error caught:', error); // Debug
+      console.error('Error response data:', error.response?.data); // Debug
+      console.error('Error response status:', error.response?.status); // Debug
       
-      // Extract specific error message from API response
+      // Always prioritize backend error message
       let errorMessage = 'Login failed';
       
+      // First priority: Backend specific message
       if (error.response?.data?.message) {
         errorMessage = error.response.data.message;
-      } else if (error.response?.status === 401) {
+        console.log('Using backend message:', errorMessage); // Debug
+      }
+      // Second priority: Backend any message field
+      else if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+        console.log('Using backend error field:', errorMessage); // Debug
+      }
+      // Third priority: Status code based messages
+      else if (error.response?.status === 401) {
         errorMessage = 'Invalid email or password';
+        console.log('Using 401 message:', errorMessage); // Debug
       } else if (error.response?.status === 404) {
         errorMessage = 'User not found';
-      } else if (error.message) {
+        console.log('Using 404 message:', errorMessage); // Debug
+      } else if (error.response?.status === 403) {
+        errorMessage = 'Access denied';
+        console.log('Using 403 message:', errorMessage); // Debug
+      }
+      // Fourth priority: Network error message
+      else if (error.message) {
         errorMessage = error.message;
+        console.log('Using error message:', errorMessage); // Debug
       }
       
-      console.error('Setting error message:', errorMessage); // Debug
+      console.error('Final error message to show:', errorMessage); // Debug
       
-      // Show error toast notification only (no UI error box)
+      // Show error toast notification with backend message
       toast.error(errorMessage, {
         position: 'top-right',
         autoClose: 5000,

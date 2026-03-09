@@ -11,14 +11,32 @@ const api = axios.create({
 let hideTimeout;
 let isLoading = false;
 
-// Check if we're on user management page
-const isUserManagementPage = () => {
-  return window.location.pathname.includes('/dashboard/users');
+// Check if we should show loading on current page
+const shouldShowLoading = () => {
+  const path = window.location.pathname;
+  
+  // Show loading on these pages
+  const loadingPages = [
+    '/login',
+    '/dashboard',
+    '/dashboard/settings'
+  ];
+  
+  // Don't show loading on these pages
+  const noLoadingPages = [
+    '/dashboard/users',
+    '/dashboard/users/edit',
+    '/dashboard/profile'
+  ];
+  
+  // Check if current path should show loading
+  return loadingPages.some(page => path === page || path.startsWith(page + '/')) &&
+         !noLoadingPages.some(page => path.startsWith(page));
 };
 
-// Show loading only on user management page
+// Show loading only on specific pages
 const showLoading = () => {
-  if (!isLoading && isUserManagementPage()) {
+  if (!isLoading && shouldShowLoading()) {
     isLoading = true;
     const loadingElement = document.querySelector('.global-loading-overlay');
     if (loadingElement) {
@@ -29,7 +47,7 @@ const showLoading = () => {
 
 // Hide loading after minimum 2-3 seconds
 const hideLoading = () => {
-  if (isLoading && isUserManagementPage()) {
+  if (isLoading && shouldShowLoading()) {
     // Clear any existing hide timeout
     if (hideTimeout) {
       clearTimeout(hideTimeout);

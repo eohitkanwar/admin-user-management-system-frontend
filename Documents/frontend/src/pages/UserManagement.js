@@ -158,22 +158,20 @@ const isAdmin = userInfo?.role === "admin";  //   userInfo.role === "admin" ||
     }
   }, [isAdmin, currentPage, searchTerm, fetchUsers]);
 
-  // 🔹 SEARCH HANDLER WITH LOADING (AFTER HOOKS ✔️)
+  // 🔹 SEARCH HANDLER (NO ARTIFICIAL LOADING)
   const handleSearch = (e) => {
     const newSearchTerm = e.target.value;
-    console.log('Search triggered, setting loading to true'); // Debug log
-    setLoading(true); // Show loading immediately for search
+    console.log('Search triggered'); // Debug log
     setSearchTerm(newSearchTerm);
     setCurrentPage(1); // Reset to first page when searching
-    // fetchUsers will be called by useEffect with loading
+    // fetchUsers will be called by useEffect
   };
 
-  // 🔹 PAGINATION HANDLERS WITH LOADING
+  // 🔹 PAGINATION HANDLERS (NO ARTIFICIAL LOADING)
   const handlePageChange = (page) => {
-    console.log('Pagination triggered, setting loading to true'); // Debug log
-    setLoading(true); // Show loading immediately
+    console.log('Pagination triggered'); // Debug log
     setCurrentPage(page);
-    // fetchUsers will be called by useEffect with loading
+    // fetchUsers will be called by useEffect
   };
 
   // 🔹 PAGINATION
@@ -181,18 +179,13 @@ const isAdmin = userInfo?.role === "admin";  //   userInfo.role === "admin" ||
   const indexOfFirstUser = indexOfLastUser - USERS_PER_PAGE;
   const currentUsers = users; // Users are already paginated from backend
 
-  // Handle edit user with loading
+  // Handle edit user (no artificial delay)
   const handleEdit = (userId) => {
     if (!userId) {
       toast.error("Invalid user ID");
       return;
     }
-    // Show loading when navigating to edit page
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      navigate(`/dashboard/users/edit/${userId}`);
-    }, 2000);
+    navigate(`/dashboard/users/edit/${userId}`);
   };
 
   // Handle delete user
@@ -209,18 +202,13 @@ const isAdmin = userInfo?.role === "admin";  //   userInfo.role === "admin" ||
     }
   
     try {
-      setLoading(true); // Show loading for delete
       await deleteUser(deleteUserData._id);
       toast.success("User deleted successfully");
       setShowDeleteModal(false);
       setDeleteUserData(null);
-      fetchUsers(currentPage, searchTerm); // This will show loading again
+      fetchUsers(currentPage, searchTerm); // Refresh user list
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to delete user");
-    } finally {
-      setTimeout(() => {
-        setLoading(false);
-      }, 2000);
     }
   };
 
@@ -325,9 +313,7 @@ const isAdmin = userInfo?.role === "admin";  //   userInfo.role === "admin" ||
         toast.error(errorMessage);
       }
     } finally {
-      setTimeout(() => {
-        setLoading(false);
-      }, 2000);
+      setLoading(false);
     }
   };
 
