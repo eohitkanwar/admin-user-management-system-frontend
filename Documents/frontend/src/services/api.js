@@ -5,7 +5,7 @@ const API_URL = process.env.REACT_APP_API_URL;
 // Create axios instance
 const api = axios.create({
   baseURL: API_URL,
-  timeout: 60000 , 
+  timeout: 15000, // Reduced from 60 seconds to 15 seconds
 });
 
 let hideTimeout;

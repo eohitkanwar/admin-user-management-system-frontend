@@ -45,10 +45,10 @@ const isAdmin = userInfo?.role === "admin";  //   userInfo.role === "admin" ||
   
   console.log('UserManagement - isAdmin check:', { userInfo, role: userInfo?.role, isAdmin }); // Debug
 
-  // 🔹 FETCH USERS (MUST BE BEFORE useEffect)
-  const fetchUsers = useCallback(async (page, search) => {
+  // 🔹 FETCH USERS WITH RETRY MECHANISM (MUST BE BEFORE useEffect)
+  const fetchUsers = useCallback(async (page, search, retryCount = 0) => {
     console.log('=== FETCH USERS START ==='); // Debug
-    console.log('fetchUsers called with:', { page, search, loading, error }); // Debug log
+    console.log('fetchUsers called with:', { page, search, loading, error, retryCount }); // Debug log
     console.log('API URL:', 'http://localhost:5000/api/auth/users'); // Debug API URL
     console.log('Token available:', !!localStorage.getItem('token')); // Debug token
     
@@ -99,10 +99,38 @@ const isAdmin = userInfo?.role === "admin";  //   userInfo.role === "admin" ||
         message: error.message,
         status: error.response?.status,
         statusText: error.response?.statusText,
-        data: error.response?.data
+        data: error.response?.data,
+        code: error.code
       }); // Debug error details
-      setError(error);
-      toast.error("Failed to fetch users");
+      
+      // Retry logic for timeout errors (max 2 retries)
+      if ((error.code === 'ECONNABORTED' || error.message.includes('timeout')) && retryCount < 2) {
+        console.log(`Retrying fetchUsers (attempt ${retryCount + 1})...`);
+        const delay = Math.pow(2, retryCount) * 1000; // 1s, 2s delays
+        setTimeout(() => {
+          fetchUsers(page, search, retryCount + 1);
+        }, delay);
+        return;
+      }
+      
+      // Handle timeout errors specifically
+      if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
+        toast.error("Request timed out. Please check your connection and try again.");
+        setError("Request timed out. Please try again.");
+      } else if (error.response?.status === 401) {
+        toast.error("Session expired. Please login again.");
+        setError("Session expired");
+      } else if (error.response?.status === 403) {
+        toast.error("You don't have permission to view users.");
+        setError("Access denied");
+      } else if (error.response?.status >= 500) {
+        toast.error("Server error. Please try again later.");
+        setError("Server error");
+      } else {
+        toast.error("Failed to fetch users");
+        setError(error.message || "Failed to fetch users");
+      }
+      
       setUsers([]); // 🛡️ fallback
       setTotalPages(1);
       setTotalUsers(0);
