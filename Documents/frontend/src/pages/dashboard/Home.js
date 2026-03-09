@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { getDashboardStats, getRecentActiveUsers, getUsers } from '../../services/userServices';
+import LoadingSpinner from '../../components/LoadingSpinner';
 import '../../styles/dashboard.css';
 
 const Home = () => {
@@ -97,7 +98,10 @@ const Home = () => {
   if (loading) {
     return (
       <div className="dashboard-home">
-        <div className="loading-spinner">Loading dashboard...</div>
+        <LoadingSpinner 
+          message="Loading dashboard..." 
+          size="large" 
+        />
       </div>
     );
   }

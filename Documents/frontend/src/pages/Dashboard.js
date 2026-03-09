@@ -11,6 +11,7 @@ import {
 } from 'react-icons/fa';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import LoadingSpinner from '../components/LoadingSpinner';
 import '../styles/dashboard.css';
 
 const Dashboard = () => {
@@ -70,6 +71,15 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-container">
+      {/* Loading Overlay */}
+      {loading && (
+        <LoadingSpinner 
+          message="Loading dashboard..." 
+          size="large" 
+          fullScreen={true} 
+        />
+      )}
+      
       <ToastContainer
         position="top-right"
         autoClose={5000}
