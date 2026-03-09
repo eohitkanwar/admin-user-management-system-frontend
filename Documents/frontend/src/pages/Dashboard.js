@@ -9,8 +9,7 @@ import {
   FaSignOutAlt,
   FaUserShield
 } from 'react-icons/fa';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { toast } from 'react-toastify';
 import LoadingSpinner from '../components/LoadingSpinner';
 import '../styles/dashboard.css';
 
@@ -80,17 +79,6 @@ const Dashboard = () => {
         />
       )}
       
-      <ToastContainer
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
       {/* Sidebar */}
       <div className="sidebar">
         <div className="sidebar-header">
