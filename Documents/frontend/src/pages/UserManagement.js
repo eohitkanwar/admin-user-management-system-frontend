@@ -1,7 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { getUsers, deleteUser, createUser } from "../services/userServices";
-import { sendWelcomeEmail } from "../services/emailService";
 import { FiEdit2, FiTrash2, FiShield, FiChevronLeft, FiChevronRight, FiSearch, FiUserPlus } from "react-icons/fi";
 import { toast } from "react-toastify";
 import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
@@ -49,7 +48,6 @@ const isAdmin = userInfo?.role === "admin";  //   userInfo.role === "admin" ||
   const fetchUsers = useCallback(async (page, search, retryCount = 0) => {
     console.log('=== FETCH USERS START ==='); // Debug
     console.log('fetchUsers called with:', { page, search, loading, error, retryCount }); // Debug log
-    console.log('API URL:', 'http://localhost:5000/api/auth/users'); // Debug API URL
     console.log('Token available:', !!localStorage.getItem('token')); // Debug token
     
     try {
@@ -272,24 +270,13 @@ const isAdmin = userInfo?.role === "admin";  //   userInfo.role === "admin" ||
       console.log('Request data:', JSON.stringify(newUser, null, 2)); // Debug
       
       const response = await createUser(newUser);
+      
+      toast.success("User added successfully!");
+
       console.log('=== CREATE USER API RESPONSE ==='); // Debug
       console.log('User created successfully:', response); // Debug log
       
       // Send welcome email
-      console.log('=== SENDING WELCOME EMAIL ==='); // Debug
-      console.log('Sending welcome email to:', newUser.email); // Debug
-      const emailResult = await sendWelcomeEmail(newUser);
-      console.log('=== EMAIL SEND RESPONSE ==='); // Debug
-      console.log('Email result:', emailResult); // Debug log
-      
-      if (emailResult.success) {
-        console.log('Welcome email sent successfully'); // Debug
-        toast.success("User added successfully! Welcome email sent.");
-      } else {
-        console.log('Welcome email failed to send:', emailResult.message); // Debug
-        toast.success("User added successfully! (Welcome email failed to send)");
-        console.warn('Welcome email failed:', emailResult.message);
-      }
       
       setShowAddUserModal(false);
       setNewUser({ username: "", email: "", password: "", role: "user" });
