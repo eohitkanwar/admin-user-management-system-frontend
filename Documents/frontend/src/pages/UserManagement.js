@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { getUsers, deleteUser, createUser } from "../services/userServices";
+import { createActivityLog } from "../services/activityService";
 import { FiEdit2, FiTrash2, FiShield, FiChevronLeft, FiChevronRight, FiSearch, FiUserPlus } from "react-icons/fi";
 import { toast } from "react-toastify";
 import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
@@ -270,6 +271,34 @@ const isAdmin = userInfo?.role === "admin";  //   userInfo.role === "admin" ||
       console.log('Request data:', JSON.stringify(newUser, null, 2)); // Debug
       
       const response = await createUser(newUser);
+      
+      // Create activity log for user creation
+      const currentUser = JSON.parse(localStorage.getItem('userInfo'));
+      if (currentUser && response.user) {
+        try {
+          const activityData = {
+            action: 'USER_CREATED',
+            targetUserId: response.user._id,
+            targetUserEmail: response.user.email,
+            targetUserName: response.user.username || response.user.name,
+            targetUserRole: response.user.role,
+            performedBy: {
+              id: currentUser._id,
+              name: currentUser.username || currentUser.name,
+              email: currentUser.email,
+              role: currentUser.role
+            },
+            timestamp: new Date().toISOString(),
+            description: `Created new user: ${response.user.username || response.user.name} (${response.user.email})`
+          };
+          
+          await createActivityLog(activityData);
+          console.log('Activity log created successfully');
+        } catch (activityError) {
+          console.error('Failed to create activity log:', activityError);
+          // Don't fail the user creation if activity logging fails
+        }
+      }
       
       toast.success("User added successfully!");
 

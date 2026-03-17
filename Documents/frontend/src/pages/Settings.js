@@ -1,7 +1,9 @@
 // src/pages/Settings.js
-import React, { useState } from 'react';
-import { FiUser, FiMail, FiLock, FiBell, FiShield, FiDatabase, FiGlobe, FiMoon, FiSun, FiSave, FiRefreshCw, FiTrash2, FiDownload, FiUpload, FiEye, FiEyeOff } from 'react-icons/fi';
+import React, { useState, useEffect } from 'react';
+import { FiUser, FiMail, FiLock, FiBell, FiShield, FiDatabase, FiGlobe, FiMoon, FiSun, FiSave, FiRefreshCw, FiTrash2, FiDownload, FiUpload, FiEye, FiEyeOff, FiClock, FiFilter, FiSearch, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import { toast } from 'react-toastify';
+import { getUserActivities } from '../services/activityService';
+import LoadingSpinner from '../components/LoadingSpinner';
 import '../styles/SettingsPage.css';
 
 const Settings = () => {
@@ -14,6 +16,15 @@ const Settings = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Activity history state
+  const [activities, setActivities] = useState([]);
+  const [activitiesLoading, setActivitiesLoading] = useState(false);
+  const [activitiesError, setActivitiesError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterAction, setFilterAction] = useState('');
 
   // Profile state
   const [profileData, setProfileData] = useState({
@@ -47,8 +58,50 @@ const Settings = () => {
     { id: 'security', label: 'Security', icon: FiLock },
     { id: 'notifications', label: 'Notifications', icon: FiBell },
     { id: 'system', label: 'System', icon: FiDatabase },
+    { id: 'activity', label: 'Activity History', icon: FiClock },
     { id: 'appearance', label: 'Appearance', icon: FiGlobe }
   ];
+
+  // Fetch activities when activity tab is active
+  useEffect(() => {
+    if (activeTab === 'activity') {
+      fetchActivities();
+    }
+  }, [activeTab, currentPage, searchTerm, filterAction]);
+
+  const fetchActivities = async () => {
+    setActivitiesLoading(true);
+    setActivitiesError(null);
+    try {
+      const response = await getUserActivities(currentPage, 10, searchTerm);
+      setActivities(response.activities || []);
+      setTotalPages(response.totalPages || 1);
+    } catch (error) {
+      console.error('Failed to fetch activities:', error);
+      setActivitiesError('Failed to load activity history');
+      toast.error('Failed to load activity history');
+    } finally {
+      setActivitiesLoading(false);
+    }
+  };
+
+  const formatTimestamp = (timestamp) => {
+    const date = new Date(timestamp);
+    return date.toLocaleString();
+  };
+
+  const getActionBadgeColor = (action) => {
+    switch (action) {
+      case 'USER_CREATED':
+        return 'bg-green-100 text-green-800';
+      case 'USER_UPDATED':
+        return 'bg-blue-100 text-blue-800';
+      case 'USER_DELETED':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
 
   const handleProfileSave = async () => {
     setIsSaving(true);
@@ -500,6 +553,142 @@ const Settings = () => {
                       </button>
                     </div>
                   </div>
+                </div>
+              )}
+
+              {/* Activity History */}
+              {activeTab === 'activity' && (
+                <div>
+                  <h2 className="settings-section-title">Activity History</h2>
+                  <p className="text-white/70 mb-6">Track all user management activities performed by administrators</p>
+                  
+                  {/* Search and Filter */}
+                  <div className="flex flex-col md:flex-row gap-4 mb-6">
+                    <div className="flex-1">
+                      <div className="relative">
+                        <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50" />
+                        <input
+                          type="text"
+                          placeholder="Search activities..."
+                          value={searchTerm}
+                          onChange={(e) => {
+                            setSearchTerm(e.target.value);
+                            setCurrentPage(1);
+                          }}
+                          className="settings-input pl-10"
+                        />
+                      </div>
+                    </div>
+                    <div className="md:w-48">
+                      <select
+                        value={filterAction}
+                        onChange={(e) => {
+                          setFilterAction(e.target.value);
+                          setCurrentPage(1);
+                        }}
+                        className="settings-input"
+                      >
+                        <option value="">All Actions</option>
+                        <option value="USER_CREATED">User Created</option>
+                        <option value="USER_UPDATED">User Updated</option>
+                        <option value="USER_DELETED">User Deleted</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  {activitiesLoading ? (
+                    <LoadingSpinner message="Loading activity history..." size="medium" />
+                  ) : activitiesError ? (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                      <p className="text-red-800">{activitiesError}</p>
+                    </div>
+                  ) : activities.length === 0 ? (
+                    <div className="text-center py-12">
+                      <FiClock className="w-12 h-12 text-white/30 mx-auto mb-4" />
+                      <p className="text-white/50">No activity history found</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {activities.map((activity) => (
+                        <div key={activity._id} className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3 mb-2">
+                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getActionBadgeColor(activity.action)}`}>
+                                  {activity.action.replace('_', ' ')}
+                                </span>
+                                <span className="text-white/70 text-sm">
+                                  {formatTimestamp(activity.timestamp)}
+                                </span>
+                              </div>
+                              
+                              <p className="text-white font-medium mb-2">{activity.description}</p>
+                              
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                {/* Performed By */}
+                                <div>
+                                  <p className="text-white/50 mb-1">Performed By:</p>
+                                  <div className="bg-white/5 rounded p-2">
+                                    <p className="text-white font-medium">{activity.performedBy?.name || 'Unknown'}</p>
+                                    <p className="text-white/70 text-xs">{activity.performedBy?.email}</p>
+                                    <p className="text-white/50 text-xs">Role: {activity.performedBy?.role}</p>
+                                  </div>
+                                </div>
+                                
+                                {/* Target User */}
+                                <div>
+                                  <p className="text-white/50 mb-1">Target User:</p>
+                                  <div className="bg-white/5 rounded p-2">
+                                    <p className="text-white font-medium">{activity.targetUserName || 'Unknown'}</p>
+                                    <p className="text-white/70 text-xs">{activity.targetUserEmail}</p>
+                                    <p className="text-white/50 text-xs">Role: {activity.targetUserRole}</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                      
+                      {/* Pagination */}
+                      {totalPages > 1 && (
+                        <div className="flex items-center justify-between mt-6 pt-4 border-t border-white/20">
+                          <div className="text-white/70 text-sm">
+                            Page {currentPage} of {totalPages}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                              disabled={currentPage === 1}
+                              className="p-2 rounded-lg bg-white/10 text-white hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              <FiChevronLeft />
+                            </button>
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                              <button
+                                key={page}
+                                onClick={() => setCurrentPage(page)}
+                                className={`px-3 py-1 rounded-lg text-sm ${
+                                  currentPage === page
+                                    ? 'bg-blue-600 text-white'
+                                    : 'bg-white/10 text-white hover:bg-white/20'
+                                }`}
+                              >
+                                {page}
+                              </button>
+                            ))}
+                            <button
+                              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                              disabled={currentPage === totalPages}
+                              className="p-2 rounded-lg bg-white/10 text-white hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              <FiChevronRight />
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 
