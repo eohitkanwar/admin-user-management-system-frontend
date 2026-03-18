@@ -74,8 +74,36 @@ const Settings = () => {
     setActivitiesError(null);
     try {
       const response = await getUserActivities(currentPage, 10, searchTerm);
-      setActivities(response.activities || []);
-      setTotalPages(response.totalPages || 1);
+      console.log('Full API response from user-history:', response);
+      console.log('Response type:', typeof response);
+      console.log('Response keys:', Object.keys(response));
+      console.log('Is array?', Array.isArray(response));
+      
+      // Handle different response structures
+      let activitiesData = [];
+      let totalPagesData = 1;
+      
+      if (Array.isArray(response)) {
+        // If response is directly an array
+        activitiesData = response;
+      } else if (response && response.activities) {
+        // If response has activities property
+        activitiesData = response.activities;
+        totalPagesData = response.totalPages || response.totalPages || 1;
+      } else if (response && response.data) {
+        // If response has data property
+        activitiesData = response.data;
+        totalPagesData = response.totalPages || response.totalPages || 1;
+      } else {
+        // If response itself is the activities array
+        activitiesData = response;
+      }
+      
+      console.log('Processed activities data:', activitiesData);
+      console.log('Total pages:', totalPagesData);
+      
+      setActivities(activitiesData);
+      setTotalPages(totalPagesData);
     } catch (error) {
       console.error('Failed to fetch activities:', error);
       setActivitiesError('Failed to load activity history');
@@ -609,20 +637,24 @@ const Settings = () => {
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {activities.map((activity) => (
-                        <div key={activity._id} className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+                      {console.log('About to render activities:', activities)}
+                      {console.log('Activities length:', activities.length)}
+                      {activities.map((activity, index) => {
+                        console.log(`Rendering activity ${index}:`, activity);
+                        return (
+                        <div key={activity._id || index} className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
                               <div className="flex items-center gap-3 mb-2">
                                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${getActionBadgeColor(activity.action)}`}>
-                                  {activity.action.replace('_', ' ')}
+                                  {activity.action?.replace('_', ' ') || 'Unknown Action'}
                                 </span>
                                 <span className="text-white/70 text-sm">
                                   {formatTimestamp(activity.timestamp)}
                                 </span>
                               </div>
                               
-                              <p className="text-white font-medium mb-2">{activity.description}</p>
+                              <p className="text-white font-medium mb-2">{activity.description || 'No description'}</p>
                               
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                                 {/* Performed By */}
@@ -639,16 +671,17 @@ const Settings = () => {
                                 <div>
                                   <p className="text-white/50 mb-1">Target User:</p>
                                   <div className="bg-white/5 rounded p-2">
-                                    <p className="text-white font-medium">{activity.targetUserName || 'Unknown'}</p>
-                                    <p className="text-white/70 text-xs">{activity.targetUserEmail}</p>
-                                    <p className="text-white/50 text-xs">Role: {activity.targetUserRole}</p>
+                                    <p className="text-white font-medium">{activity.targetUserName || activity.targetUser?.name || 'Unknown'}</p>
+                                    <p className="text-white/70 text-xs">{activity.targetUserEmail || activity.targetUser?.email}</p>
+                                    <p className="text-white/50 text-xs">Role: {activity.targetUserRole || activity.targetUser?.role}</p>
                                   </div>
                                 </div>
                               </div>
                             </div>
                           </div>
                         </div>
-                      ))}
+                        );
+                      })}
                       
                       {/* Pagination */}
                       {totalPages > 1 && (
