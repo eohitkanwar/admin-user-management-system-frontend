@@ -661,10 +661,20 @@ const Settings = () => {
                     </div>
                   ) : (
                     <div className="space-y-4">
+                      {console.log('=== RENDER SECTION START ===')}
                       {console.log('About to render activities:', activities)}
                       {console.log('Activities length:', activities.length)}
                       {activities.map((activity, index) => {
-                        console.log(`Rendering activity ${index}:`, activity);
+                        console.log(`=== RENDERING ACTIVITY ${index} ===`);
+                        console.log('Full activity object:', activity);
+                        console.log('Activity keys:', activity ? Object.keys(activity) : 'null/undefined');
+                        console.log('Activity action:', activity.action);
+                        console.log('Activity timestamp:', activity.timestamp);
+                        console.log('Activity description:', activity.description);
+                        console.log('Performed by:', activity.performedBy);
+                        console.log('Target user:', activity.targetUser);
+                        console.log('Target user name:', activity.targetUserName);
+                        console.log('Target user email:', activity.targetUserEmail);
                         return (
                         <div key={activity._id || index} className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
                           <div className="flex items-start justify-between">
@@ -685,9 +695,9 @@ const Settings = () => {
                                 <div>
                                   <p className="text-white/50 mb-1">Performed By:</p>
                                   <div className="bg-white/5 rounded p-2">
-                                    <p className="text-white font-medium">{activity.performedBy?.name || 'Unknown'}</p>
-                                    <p className="text-white/70 text-xs">{activity.performedBy?.email}</p>
-                                    <p className="text-white/50 text-xs">Role: {activity.performedBy?.role}</p>
+                                    <p className="text-white font-medium">{activity.performedBy?.name || activity.adminName || activity.createdBy?.name || 'Unknown'}</p>
+                                    <p className="text-white/70 text-xs">{activity.performedBy?.email || activity.adminEmail || activity.createdBy?.email || ''}</p>
+                                    <p className="text-white/50 text-xs">Role: {activity.performedBy?.role || activity.adminRole || activity.createdBy?.role || 'Unknown'}</p>
                                   </div>
                                 </div>
                                 
@@ -695,9 +705,9 @@ const Settings = () => {
                                 <div>
                                   <p className="text-white/50 mb-1">Target User:</p>
                                   <div className="bg-white/5 rounded p-2">
-                                    <p className="text-white font-medium">{activity.targetUserName || activity.targetUser?.name || 'Unknown'}</p>
-                                    <p className="text-white/70 text-xs">{activity.targetUserEmail || activity.targetUser?.email}</p>
-                                    <p className="text-white/50 text-xs">Role: {activity.targetUserRole || activity.targetUser?.role}</p>
+                                    <p className="text-white font-medium">{activity.targetUserName || activity.targetUser?.name || activity.userName || activity.user?.name || 'Unknown'}</p>
+                                    <p className="text-white/70 text-xs">{activity.targetUserEmail || activity.targetUser?.email || activity.userEmail || activity.user?.email || ''}</p>
+                                    <p className="text-white/50 text-xs">Role: {activity.targetUserRole || activity.targetUser?.role || activity.userRole || activity.user?.role || 'Unknown'}</p>
                                   </div>
                                 </div>
                               </div>
@@ -706,6 +716,7 @@ const Settings = () => {
                         </div>
                         );
                       })}
+                      {console.log('=== RENDER SECTION END ===')}
                       
                       {/* Pagination */}
                       {totalPages > 1 && (
@@ -749,46 +760,6 @@ const Settings = () => {
                 </div>
               )}
 
-              {/* Appearance Settings */}
-              {activeTab === 'appearance' && (
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Appearance Settings</h2>
-                  
-                  <div className="space-y-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900">Dark Mode</h3>
-                        <p className="text-sm text-gray-500">Toggle dark mode theme</p>
-                      </div>
-                      <button
-                        onClick={() => setDarkMode(!darkMode)}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                          darkMode ? 'bg-blue-600' : 'bg-gray-200'
-                        }`}
-                      >
-                        <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                            darkMode ? 'translate-x-6' : 'translate-x-1'
-                          }`}
-                        />
-                      </button>
-                    </div>
-
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Theme Color</h3>
-                      <div className="flex space-x-3">
-                        {['blue', 'green', 'purple', 'red', 'orange'].map((color) => (
-                          <button
-                            key={color}
-                            className={`w-8 h-8 rounded-full bg-${color}-500 hover:ring-2 hover:ring-${color}-500 hover:ring-offset-2`}
-                            style={{ backgroundColor: color === 'blue' ? '#3B82F6' : color === 'green' ? '#10B981' : color === 'purple' ? '#8B5CF6' : color === 'red' ? '#EF4444' : '#F97316' }}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </div>
