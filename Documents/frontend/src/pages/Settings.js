@@ -73,43 +73,67 @@ const Settings = () => {
     setActivitiesLoading(true);
     setActivitiesError(null);
     try {
+      console.log('=== FETCHING ACTIVITIES START ===');
       const response = await getUserActivities(currentPage, 10, searchTerm);
-      console.log('Full API response from user-history:', response);
+      console.log('=== RAW API RESPONSE ===');
+      console.log('Full response:', response);
       console.log('Response type:', typeof response);
-      console.log('Response keys:', Object.keys(response));
-      console.log('Is array?', Array.isArray(response));
+      console.log('Is array:', Array.isArray(response));
+      console.log('Response keys:', response ? Object.keys(response) : 'null/undefined');
       
       // Handle different response structures
       let activitiesData = [];
       let totalPagesData = 1;
       
       if (Array.isArray(response)) {
-        // If response is directly an array
+        console.log('=== RESPONSE IS DIRECT ARRAY ===');
         activitiesData = response;
-      } else if (response && response.activities) {
-        // If response has activities property
-        activitiesData = response.activities;
-        totalPagesData = response.totalPages || response.totalPages || 1;
+        console.log('Activities from array:', activitiesData);
       } else if (response && response.data) {
-        // If response has data property
+        console.log('=== RESPONSE HAS DATA PROPERTY ===');
         activitiesData = response.data;
         totalPagesData = response.totalPages || response.totalPages || 1;
+        console.log('Activities from data property:', activitiesData);
+        console.log('Total pages:', totalPagesData);
+      } else if (response && response.activities) {
+        console.log('=== RESPONSE HAS ACTIVITIES PROPERTY ===');
+        activitiesData = response.activities;
+        totalPagesData = response.totalPages || response.totalPages || 1;
+        console.log('Activities from activities property:', activitiesData);
+        console.log('Total pages:', totalPagesData);
+      } else if (response && typeof response === 'object') {
+        console.log('=== RESPONSE IS OBJECT - CHECKING ALL KEYS ===');
+        // Check if any key contains an array
+        Object.keys(response).forEach(key => {
+          if (Array.isArray(response[key])) {
+            console.log(`Found array in key "${key}":`, response[key]);
+            activitiesData = response[key];
+          }
+        });
       } else {
-        // If response itself is the activities array
-        activitiesData = response;
+        console.log('=== USING RESPONSE AS FALLBACK ===');
+        activitiesData = response || [];
       }
       
-      console.log('Processed activities data:', activitiesData);
+      console.log('=== FINAL PROCESSED DATA ===');
+      console.log('Activities data:', activitiesData);
+      console.log('Activities length:', activitiesData.length);
+      console.log('Activities type:', typeof activitiesData);
       console.log('Total pages:', totalPagesData);
       
+      // Set the state
       setActivities(activitiesData);
       setTotalPages(totalPagesData);
+      
+      console.log('=== STATE UPDATED ===');
+      console.log('=== FETCHING ACTIVITIES END ===');
     } catch (error) {
-      console.error('Failed to fetch activities:', error);
+      console.error('=== FETCH ERROR ===', error);
       setActivitiesError('Failed to load activity history');
       toast.error('Failed to load activity history');
     } finally {
       setActivitiesLoading(false);
+      console.log('=== LOADING SET TO FALSE ===');
     }
   };
 
