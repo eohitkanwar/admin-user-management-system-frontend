@@ -675,6 +675,50 @@ const Settings = () => {
                         console.log('Target user:', activity.targetUser);
                         console.log('Target user name:', activity.targetUserName);
                         console.log('Target user email:', activity.targetUserEmail);
+
+                        // Add more comprehensive field checking
+                        const performedByName = activity.performedBy?.name || 
+                                          activity.admin?.name || 
+                                          activity.createdBy?.name || 
+                                          activity.adminName || 
+                                          activity.performedByName || 
+                                          'Unknown';
+                        
+                        const performedByEmail = activity.performedBy?.email || 
+                                           activity.admin?.email || 
+                                           activity.createdBy?.email || 
+                                           activity.adminEmail || 
+                                           activity.performedByEmail || 
+                                           '';
+                        
+                        const performedByRole = activity.performedBy?.role || 
+                                          activity.admin?.role || 
+                                          activity.createdBy?.role || 
+                                          activity.adminRole || 
+                                          activity.performedByRole || 
+                                          'Unknown';
+                        
+                        const targetUserName = activity.targetUserName || 
+                                          activity.targetUser?.name || 
+                                          activity.user?.name || 
+                                          activity.userName || 
+                                          activity.targetName || 
+                                          'Unknown';
+                        
+                        const targetUserEmail = activity.targetUserEmail || 
+                                           activity.targetUser?.email || 
+                                           activity.user?.email || 
+                                           activity.userEmail || 
+                                           activity.targetEmail || 
+                                           '';
+                        
+                        const targetUserRole = activity.targetUserRole || 
+                                           activity.targetUser?.role || 
+                                           activity.user?.role || 
+                                           activity.userRole || 
+                                           activity.targetRole || 
+                                           'Unknown';
+                        
                         return (
                         <div key={activity._id || index} className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
                           <div className="flex items-start justify-between">
@@ -695,9 +739,9 @@ const Settings = () => {
                                 <div>
                                   <p className="text-white/50 mb-1">Performed By:</p>
                                   <div className="bg-white/5 rounded p-2">
-                                    <p className="text-white font-medium">{activity.performedBy?.name || activity.adminName || activity.createdBy?.name || 'Unknown'}</p>
-                                    <p className="text-white/70 text-xs">{activity.performedBy?.email || activity.adminEmail || activity.createdBy?.email || ''}</p>
-                                    <p className="text-white/50 text-xs">Role: {activity.performedBy?.role || activity.adminRole || activity.createdBy?.role || 'Unknown'}</p>
+                                    <p className="text-white font-medium">{performedByName}</p>
+                                    <p className="text-white/70 text-xs">{performedByEmail}</p>
+                                    <p className="text-white/50 text-xs">Role: {performedByRole}</p>
                                   </div>
                                 </div>
                                 
@@ -705,9 +749,9 @@ const Settings = () => {
                                 <div>
                                   <p className="text-white/50 mb-1">Target User:</p>
                                   <div className="bg-white/5 rounded p-2">
-                                    <p className="text-white font-medium">{activity.targetUserName || activity.targetUser?.name || activity.userName || activity.user?.name || 'Unknown'}</p>
-                                    <p className="text-white/70 text-xs">{activity.targetUserEmail || activity.targetUser?.email || activity.userEmail || activity.user?.email || ''}</p>
-                                    <p className="text-white/50 text-xs">Role: {activity.targetUserRole || activity.targetUser?.role || activity.userRole || activity.user?.role || 'Unknown'}</p>
+                                    <p className="text-white font-medium">{targetUserName}</p>
+                                    <p className="text-white/70 text-xs">{targetUserEmail}</p>
+                                    <p className="text-white/50 text-xs">Role: {targetUserRole}</p>
                                   </div>
                                 </div>
                               </div>
