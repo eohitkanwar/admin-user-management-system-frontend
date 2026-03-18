@@ -4,7 +4,7 @@ import api from './api';
 export const getUserActivities = async (page = 1, limit = 10, search = '') => {
   try {
     console.log('Fetching user activities:', { page, limit, search });
-    const { data } = await api.get(`/api/auth/activities?page=${page}&limit=${limit}&search=${search}`);
+    const { data } = await api.get(`/api/auth/user-history?page=${page}&limit=${limit}&search=${search}`);
     console.log('User activities response:', data);
     return data;
   } catch (error) {
@@ -17,7 +17,7 @@ export const getUserActivities = async (page = 1, limit = 10, search = '') => {
 export const createActivityLog = async (activityData) => {
   try {
     console.log('Creating activity log:', activityData);
-    const { data } = await api.post('/api/auth/activities', activityData);
+    const { data } = await api.post('/api/auth/user-history', activityData);
     console.log('Activity log created:', data);
     return data;
   } catch (error) {
@@ -30,7 +30,7 @@ export const createActivityLog = async (activityData) => {
 export const getActivitiesByAdmin = async (adminId, page = 1, limit = 10) => {
   try {
     console.log('Fetching activities by admin:', { adminId, page, limit });
-    const { data } = await api.get(`/api/auth/activities/admin/${adminId}?page=${page}&limit=${limit}`);
+    const { data } = await api.get(`/api/auth/user-history/admin/${adminId}?page=${page}&limit=${limit}`);
     console.log('Admin activities response:', data);
     return data;
   } catch (error) {
