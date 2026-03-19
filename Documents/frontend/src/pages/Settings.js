@@ -155,6 +155,19 @@ const Settings = () => {
     }
   };
 
+  const getActionIcon = (action) => {
+    switch (action) {
+      case 'USER_CREATED':
+        return '👤';
+      case 'USER_UPDATED':
+        return '✏️';
+      case 'USER_DELETED':
+        return '🗑️';
+      default:
+        return '📋';
+    }
+  };
+
   const handleProfileSave = async () => {
     setIsSaving(true);
     try {
@@ -701,21 +714,29 @@ const Settings = () => {
                                           activity.performedByRole || 
                                           'Unknown';
                           
-                          targetUserName = activity.targetUserName || 
+                          // Updated to handle createUser instead of targetUser
+                          targetUserName = activity.createUser?.name || 
+                                          activity.createUser?.username || 
+                                          activity.createUser?.fullName || 
+                                          activity.targetUserName || 
                                           activity.targetUser?.name || 
                                           activity.user?.name || 
                                           activity.userName || 
                                           activity.targetName || 
                                           'Unknown';
                           
-                          targetUserEmail = activity.targetUserEmail || 
+                          targetUserEmail = activity.createUser?.email || 
+                                           activity.createUser?.emailAddress || 
+                                           activity.targetUserEmail || 
                                            activity.targetUser?.email || 
                                            activity.user?.email || 
                                            activity.userEmail || 
                                            activity.targetEmail || 
                                            '';
                           
-                          targetUserRole = activity.targetUserRole || 
+                          targetUserRole = activity.createUser?.role || 
+                                           activity.createUser?.userType || 
+                                           activity.targetUserRole || 
                                            activity.targetUser?.role || 
                                            activity.user?.role || 
                                            activity.userRole || 
@@ -735,7 +756,8 @@ const Settings = () => {
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
                               <div className="flex items-center gap-3 mb-2">
-                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getActionBadgeColor(activity.action)}`}>
+                                <span className="text-lg mr-2">{getActionIcon(activity.action)}</span>
+                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${getActionBadgeColor(activity.action)}`}>
                                   {activity.action?.replace('_', ' ') || 'Unknown Action'}
                                 </span>
                                 <span className="text-white/70 text-sm">

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { FiUser, FiMail, FiShield, FiArrowLeft, FiSave, FiCheck, FiX, FiLoader } from "react-icons/fi";
 import { updateUser, getUserById } from "../../services/userServices";
+import { createActivityLog } from "../../services/activityService";
 import { toast } from "react-toastify";
 import "../../styles/EditUserPage.css";
 
@@ -91,6 +92,34 @@ const EditUserPage = () => {
       };
 
       await updateUser(id, updateData);
+
+      // Create activity log for user update
+      const currentUser = JSON.parse(localStorage.getItem('userInfo'));
+      if (currentUser && formData) {
+        try {
+          const activityData = {
+            action: 'USER_UPDATED',
+            targetUserId: id,
+            targetUserEmail: formData.email,
+            targetUserName: formData.name,
+            targetUserRole: formData.role,
+            performedBy: {
+              id: currentUser._id,
+              name: currentUser.username || currentUser.name,
+              email: currentUser.email,
+              role: currentUser.role
+            },
+            timestamp: new Date().toISOString(),
+            description: `Updated user: ${formData.name} (${formData.email})`
+          };
+          
+          await createActivityLog(activityData);
+          console.log('User update activity log created successfully');
+        } catch (activityError) {
+          console.error('Failed to create user update activity log:', activityError);
+          // Don't fail the user update if activity logging fails
+        }
+      }
 
       setSaveSuccess(true);
       toast.success("User updated successfully!");

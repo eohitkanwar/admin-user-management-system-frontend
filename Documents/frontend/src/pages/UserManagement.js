@@ -202,6 +202,35 @@ const isAdmin = userInfo?.role === "admin";  //   userInfo.role === "admin" ||
   
     try {
       await deleteUser(deleteUserData._id);
+      
+      // Create activity log for user deletion
+      const currentUser = JSON.parse(localStorage.getItem('userInfo'));
+      if (currentUser && deleteUserData) {
+        try {
+          const activityData = {
+            action: 'USER_DELETED',
+            targetUserId: deleteUserData._id,
+            targetUserEmail: deleteUserData.email,
+            targetUserName: deleteUserData.username || deleteUserData.name,
+            targetUserRole: deleteUserData.role,
+            performedBy: {
+              id: currentUser._id,
+              name: currentUser.username || currentUser.name,
+              email: currentUser.email,
+              role: currentUser.role
+            },
+            timestamp: new Date().toISOString(),
+            description: `Deleted user: ${deleteUserData.username || deleteUserData.name} (${deleteUserData.email})`
+          };
+          
+          await createActivityLog(activityData);
+          console.log('User deletion activity log created successfully');
+        } catch (activityError) {
+          console.error('Failed to create user deletion activity log:', activityError);
+          // Don't fail the user deletion if activity logging fails
+        }
+      }
+      
       toast.success("User deleted successfully");
       setShowDeleteModal(false);
       setDeleteUserData(null);
