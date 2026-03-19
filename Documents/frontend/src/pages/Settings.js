@@ -676,49 +676,60 @@ const Settings = () => {
                         console.log('Target user name:', activity.targetUserName);
                         console.log('Target user email:', activity.targetUserEmail);
 
+                        let performedByName, performedByEmail, performedByRole, targetUserName, targetUserEmail, targetUserRole;
+
                         // Add more comprehensive field checking
-                        const performedByName = activity.performedBy?.name || 
+                        if (activity) {
+                          performedByName = activity.performedBy?.name || 
                                           activity.admin?.name || 
                                           activity.createdBy?.name || 
                                           activity.adminName || 
                                           activity.performedByName || 
                                           'Unknown';
-                        
-                        const performedByEmail = activity.performedBy?.email || 
+                          
+                          performedByEmail = activity.performedBy?.email || 
                                            activity.admin?.email || 
                                            activity.createdBy?.email || 
                                            activity.adminEmail || 
                                            activity.performedByEmail || 
                                            '';
-                        
-                        const performedByRole = activity.performedBy?.role || 
+                          
+                          performedByRole = activity.performedBy?.role || 
                                           activity.admin?.role || 
                                           activity.createdBy?.role || 
                                           activity.adminRole || 
                                           activity.performedByRole || 
                                           'Unknown';
-                        
-                        const targetUserName = activity.targetUserName || 
+                          
+                          targetUserName = activity.targetUserName || 
                                           activity.targetUser?.name || 
                                           activity.user?.name || 
                                           activity.userName || 
                                           activity.targetName || 
                                           'Unknown';
-                        
-                        const targetUserEmail = activity.targetUserEmail || 
+                          
+                          targetUserEmail = activity.targetUserEmail || 
                                            activity.targetUser?.email || 
                                            activity.user?.email || 
                                            activity.userEmail || 
                                            activity.targetEmail || 
                                            '';
-                        
-                        const targetUserRole = activity.targetUserRole || 
+                          
+                          targetUserRole = activity.targetUserRole || 
                                            activity.targetUser?.role || 
                                            activity.user?.role || 
                                            activity.userRole || 
                                            activity.targetRole || 
                                            'Unknown';
-                        
+                        } else {
+                          performedByName = 'Unknown';
+                          performedByEmail = '';
+                          performedByRole = 'Unknown';
+                          targetUserName = 'Unknown';
+                          targetUserEmail = '';
+                          targetUserRole = 'Unknown';
+                        }
+
                         return (
                         <div key={activity._id || index} className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
                           <div className="flex items-start justify-between">
