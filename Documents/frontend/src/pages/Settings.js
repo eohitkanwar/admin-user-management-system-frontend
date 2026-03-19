@@ -701,21 +701,29 @@ const Settings = () => {
                                           activity.performedByRole || 
                                           'Unknown';
                           
-                          targetUserName = activity.targetUserName || 
+                          // Updated to handle createUser instead of targetUser
+                          targetUserName = activity.createUser?.name || 
+                                          activity.createUser?.username || 
+                                          activity.createUser?.fullName || 
+                                          activity.targetUserName || 
                                           activity.targetUser?.name || 
                                           activity.user?.name || 
                                           activity.userName || 
                                           activity.targetName || 
                                           'Unknown';
                           
-                          targetUserEmail = activity.targetUserEmail || 
+                          targetUserEmail = activity.createUser?.email || 
+                                           activity.createUser?.emailAddress || 
+                                           activity.targetUserEmail || 
                                            activity.targetUser?.email || 
                                            activity.user?.email || 
                                            activity.userEmail || 
                                            activity.targetEmail || 
                                            '';
                           
-                          targetUserRole = activity.targetUserRole || 
+                          targetUserRole = activity.createUser?.role || 
+                                           activity.createUser?.userType || 
+                                           activity.targetUserRole || 
                                            activity.targetUser?.role || 
                                            activity.user?.role || 
                                            activity.userRole || 
