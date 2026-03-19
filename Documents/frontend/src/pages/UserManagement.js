@@ -157,10 +157,10 @@ const isAdmin = userInfo?.role === "admin";  //   userInfo.role === "admin" ||
     }
   }, [isAdmin, currentPage, searchTerm, fetchUsers]);
 
-  // 🔹 SEARCH HANDLER (REAL-TIME)
+  // 🔹 SEARCH HANDLER (NO ARTIFICIAL LOADING)
   const handleSearch = (e) => {
     const newSearchTerm = e.target.value;
-    console.log('Search triggered with:', newSearchTerm); // Debug log
+    console.log('Search triggered'); // Debug log
     setSearchTerm(newSearchTerm);
     setCurrentPage(1); // Reset to first page when searching
     // fetchUsers will be called by useEffect
@@ -234,23 +234,7 @@ const isAdmin = userInfo?.role === "admin";  //   userInfo.role === "admin" ||
       toast.success("User deleted successfully");
       setShowDeleteModal(false);
       setDeleteUserData(null);
-      
-      // Check if we need to adjust page after deletion
-      const newTotalUsers = totalUsers - 1;
-      const usersPerPage = 6; // This should match your backend limit
-      const newTotalPages = Math.ceil(newTotalUsers / usersPerPage);
-      
-      // If current page is beyond new total pages, go to last page
-      const pageToFetch = currentPage > newTotalPages ? newTotalPages : currentPage;
-      
-      console.log('After deletion - Total users:', newTotalUsers, 'New total pages:', newTotalPages, 'Fetching page:', pageToFetch);
-      
-      // Update current page state if we changed pages
-      if (pageToFetch !== currentPage) {
-        setCurrentPage(pageToFetch);
-      }
-      
-      fetchUsers(pageToFetch, searchTerm); // Refresh user list with adjusted page
+      fetchUsers(currentPage, searchTerm); // Refresh user list
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to delete user");
     }
@@ -416,10 +400,12 @@ const isAdmin = userInfo?.role === "admin";  //   userInfo.role === "admin" ||
             </div>
             <input
               type="text"
-              className="user-search-input pl-10"
-              placeholder="Search users by name or email..."
+              className="user-search-input"
+              placeholder="Search users..."
               value={searchTerm}
               onChange={handleSearch}
+              onInput={(e) => console.log('Input event:', e.target.value)} // Debug input events
+              onKeyDown={(e) => console.log('Key pressed:', e.key)} // Debug keyboard events
               autoComplete="off"
               autoFocus={false}
               spellCheck="false"

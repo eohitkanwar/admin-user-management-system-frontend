@@ -119,16 +119,15 @@ const LoginPage = () => {
       console.log('Login response received:', response); // Debug
       
       if (response) {
-        console.log('Login successful, checking admin role...'); // Debug
+        console.log('Login successful, checking user role...'); // Debug
         
-        // Check if user has admin role
+        // Check if user is admin
         const userRole = response.user?.role || response.user?.userType || 'user';
         console.log('User role:', userRole); // Debug
         
-        if (userRole !== 'admin') {
+        if (userRole !== 'admin' && userRole !== 'superadmin') {
           console.log('User is not admin, denying access'); // Debug
-          setError('Access denied. Only administrators can login.');
-          toast.error('Access denied. Only administrators can login.', {
+          toast.error('Access denied! Only administrators can login to this system.', {
             position: 'top-right',
             autoClose: 5000,
             hideProgressBar: false,
@@ -140,7 +139,7 @@ const LoginPage = () => {
           return;
         }
         
-        console.log('User is admin, allowing access'); // Debug
+        console.log('User is admin, proceeding with login'); // Debug
         // Clear error before navigation
         setError('');
         // Clear any existing toasts before showing login success
@@ -221,8 +220,8 @@ const LoginPage = () => {
     <div className="auth-container">
       <div className="auth-card">
         <div className="auth-logo">
-          <h1 className="auth-title">Admin Only Login</h1>
-          <p className="auth-subtitle">Only administrators can access this panel</p>
+          <h1 className="auth-title">Admin Login</h1>
+          <p className="auth-subtitle">Sign in to access the admin panel</p>
         </div>
 
         {/* Debug: Show current error state */}
