@@ -756,7 +756,6 @@ const Settings = () => {
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
                               <div className="flex items-center gap-3 mb-2">
-                                <span className="text-lg mr-2">{getActionIcon(activity.action)}</span>
                                 <span className={`px-3 py-1 rounded-full text-xs font-medium ${getActionBadgeColor(activity.action)}`}>
                                   {activity.action?.replace('_', ' ') || 'Unknown Action'}
                                 </span>
