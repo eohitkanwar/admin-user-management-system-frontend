@@ -119,13 +119,34 @@ const LoginPage = () => {
       console.log('Login response received:', response); // Debug
       
       if (response) {
-        console.log('Login successful, navigating to dashboard'); // Debug
+        console.log('Login successful, checking admin role...'); // Debug
+        
+        // Check if user has admin role
+        const userRole = response.user?.role || response.user?.userType || 'user';
+        console.log('User role:', userRole); // Debug
+        
+        if (userRole !== 'admin') {
+          console.log('User is not admin, denying access'); // Debug
+          setError('Access denied. Only administrators can login.');
+          toast.error('Access denied. Only administrators can login.', {
+            position: 'top-right',
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+          });
+          setLoading(false);
+          return;
+        }
+        
+        console.log('User is admin, allowing access'); // Debug
         // Clear error before navigation
         setError('');
         // Clear any existing toasts before showing login success
         toast.dismiss();
         // Show success toast with user's proper name
-        const userName = response.user?.name || response.user?.username || 'User';
+        const userName = response.user?.name || response.user?.username || 'Admin';
         toast.success(`${userName} logged in successfully!`, {
           position: 'top-right',
           autoClose: 3000,
@@ -200,8 +221,8 @@ const LoginPage = () => {
     <div className="auth-container">
       <div className="auth-card">
         <div className="auth-logo">
-          <h1 className="auth-title">Admin Login</h1>
-          <p className="auth-subtitle">Sign in to access the admin panel</p>
+          <h1 className="auth-title">Admin Only Login</h1>
+          <p className="auth-subtitle">Only administrators can access this panel</p>
         </div>
 
         {/* Debug: Show current error state */}

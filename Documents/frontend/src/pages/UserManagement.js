@@ -157,13 +157,36 @@ const isAdmin = userInfo?.role === "admin";  //   userInfo.role === "admin" ||
     }
   }, [isAdmin, currentPage, searchTerm, fetchUsers]);
 
-  // 🔹 SEARCH HANDLER (NO ARTIFICIAL LOADING)
+  // Cleanup search timeout on component unmount
+  useEffect(() => {
+    return () => {
+      if (searchTimeout) {
+        clearTimeout(searchTimeout);
+      }
+    };
+  }, [searchTimeout]);
+
+  // 🔹 SEARCH HANDLER (REAL-TIME WITH DEBOUNCE)
+  const [searchTimeout, setSearchTimeout] = useState(null);
+  
   const handleSearch = (e) => {
     const newSearchTerm = e.target.value;
-    console.log('Search triggered'); // Debug log
-    setSearchTerm(newSearchTerm);
-    setCurrentPage(1); // Reset to first page when searching
-    // fetchUsers will be called by useEffect
+    console.log('Search triggered with:', newSearchTerm); // Debug log
+    
+    // Clear existing timeout
+    if (searchTimeout) {
+      clearTimeout(searchTimeout);
+    }
+    
+    // Set new timeout for debounced search
+    const timeout = setTimeout(() => {
+      console.log('Executing search for:', newSearchTerm); // Debug log
+      setSearchTerm(newSearchTerm);
+      setCurrentPage(1); // Reset to first page when searching
+      // fetchUsers will be called by useEffect
+    }, 300); // 300ms delay for better UX
+    
+    setSearchTimeout(timeout);
   };
 
   // 🔹 PAGINATION HANDLERS (NO ARTIFICIAL LOADING)
@@ -234,7 +257,23 @@ const isAdmin = userInfo?.role === "admin";  //   userInfo.role === "admin" ||
       toast.success("User deleted successfully");
       setShowDeleteModal(false);
       setDeleteUserData(null);
-      fetchUsers(currentPage, searchTerm); // Refresh user list
+      
+      // Check if we need to adjust page after deletion
+      const newTotalUsers = totalUsers - 1;
+      const usersPerPage = 6; // This should match your backend limit
+      const newTotalPages = Math.ceil(newTotalUsers / usersPerPage);
+      
+      // If current page is beyond new total pages, go to last page
+      const pageToFetch = currentPage > newTotalPages ? newTotalPages : currentPage;
+      
+      console.log('After deletion - Total users:', newTotalUsers, 'New total pages:', newTotalPages, 'Fetching page:', pageToFetch);
+      
+      // Update current page state if we changed pages
+      if (pageToFetch !== currentPage) {
+        setCurrentPage(pageToFetch);
+      }
+      
+      fetchUsers(pageToFetch, searchTerm); // Refresh user list with adjusted page
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to delete user");
     }
@@ -400,12 +439,10 @@ const isAdmin = userInfo?.role === "admin";  //   userInfo.role === "admin" ||
             </div>
             <input
               type="text"
-              className="user-search-input"
-              placeholder="Search users..."
+              className="user-search-input pl-10"
+              placeholder="Search users by name or email..."
               value={searchTerm}
               onChange={handleSearch}
-              onInput={(e) => console.log('Input event:', e.target.value)} // Debug input events
-              onKeyDown={(e) => console.log('Key pressed:', e.key)} // Debug keyboard events
               autoComplete="off"
               autoFocus={false}
               spellCheck="false"
