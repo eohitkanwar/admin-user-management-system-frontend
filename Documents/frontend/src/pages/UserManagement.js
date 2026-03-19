@@ -267,7 +267,6 @@ const isAdmin = userInfo?.role === "admin";  //   userInfo.role === "admin" ||
       
       // Call the actual API to create user
       console.log('=== CALLING CREATE USER API ==='); // Debug
-      console.log('Making POST request to:', 'http://localhost:5000/api/auth/users'); // Debug
       console.log('Request data:', JSON.stringify(newUser, null, 2)); // Debug
       
       const response = await createUser(newUser);
