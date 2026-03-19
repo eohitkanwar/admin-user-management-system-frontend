@@ -157,36 +157,13 @@ const isAdmin = userInfo?.role === "admin";  //   userInfo.role === "admin" ||
     }
   }, [isAdmin, currentPage, searchTerm, fetchUsers]);
 
-  // Cleanup search timeout on component unmount
-  useEffect(() => {
-    return () => {
-      if (searchTimeout) {
-        clearTimeout(searchTimeout);
-      }
-    };
-  }, [searchTimeout]);
-
-  // 🔹 SEARCH HANDLER (REAL-TIME WITH DEBOUNCE)
-  const [searchTimeout, setSearchTimeout] = useState(null);
-  
+  // 🔹 SEARCH HANDLER (REAL-TIME)
   const handleSearch = (e) => {
     const newSearchTerm = e.target.value;
     console.log('Search triggered with:', newSearchTerm); // Debug log
-    
-    // Clear existing timeout
-    if (searchTimeout) {
-      clearTimeout(searchTimeout);
-    }
-    
-    // Set new timeout for debounced search
-    const timeout = setTimeout(() => {
-      console.log('Executing search for:', newSearchTerm); // Debug log
-      setSearchTerm(newSearchTerm);
-      setCurrentPage(1); // Reset to first page when searching
-      // fetchUsers will be called by useEffect
-    }, 300); // 300ms delay for better UX
-    
-    setSearchTimeout(timeout);
+    setSearchTerm(newSearchTerm);
+    setCurrentPage(1); // Reset to first page when searching
+    // fetchUsers will be called by useEffect
   };
 
   // 🔹 PAGINATION HANDLERS (NO ARTIFICIAL LOADING)
