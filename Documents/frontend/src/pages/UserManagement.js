@@ -3,7 +3,15 @@ import { useNavigate } from "react-router-dom";
 import { getUsers, deleteUser, createUser } from "../services/userServices";
 import { createActivityLog } from "../services/activityService";
 import { sendWelcomeEmail } from "../services/emailService";
-import { FiEdit2, FiTrash2, FiShield, FiChevronLeft, FiChevronRight, FiSearch, FiUserPlus } from "react-icons/fi";
+import {
+  FiEdit2,
+  FiTrash2,
+  FiShield,
+  FiChevronLeft,
+  FiChevronRight,
+  FiSearch,
+  FiUserPlus,
+} from "react-icons/fi";
 import { toast } from "react-toastify";
 import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
 import "../styles/UserManagement.css";
@@ -13,10 +21,10 @@ const USERS_PER_PAGE = 6;
 const UserManagement = () => {
   // ✅ ALL HOOKS FIRST (NO CONDITION)
   const navigate = useNavigate();
-  
-  console.log('=== USER MANAGEMENT COMPONENT MOUNTED ==='); // Debug component mount
-  console.log('localStorage userInfo:', localStorage.getItem('userInfo')); // Debug localStorage
-  console.log('localStorage token:', !!localStorage.getItem('token')); // Debug token
+
+  console.log("=== USER MANAGEMENT COMPONENT MOUNTED ==="); // Debug component mount
+  console.log("localStorage userInfo:", localStorage.getItem("userInfo")); // Debug localStorage
+  console.log("localStorage token:", !!localStorage.getItem("token")); // Debug token
 
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -28,70 +36,88 @@ const UserManagement = () => {
   const [deleteUserData, setDeleteUserData] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddUserModal, setShowAddUserModal] = useState(false);
-  const [newUser, setNewUser] = useState({ username: "", email: "", password: "", role: "user" });
+  const [newUser, setNewUser] = useState({
+    username: "",
+    email: "",
+    password: "",
+    role: "user",
+  });
 
   // 🔐 AUTH CHECK (NORMAL VARIABLE — NOT A HOOK)
   const userInfo = JSON.parse(localStorage.getItem("userInfo"));
-  console.log('UserManagement - userInfo from localStorage:', userInfo); // Debug
-  console.log('UserManagement - userInfo.role:', userInfo?.role); // Debug
-  console.log('UserManagement - typeof userInfo.role:', typeof userInfo?.role); // Debug
-  
+  console.log("UserManagement - userInfo from localStorage:", userInfo); // Debug
+  console.log("UserManagement - userInfo.role:", userInfo?.role); // Debug
+  console.log("UserManagement - typeof userInfo.role:", typeof userInfo?.role); // Debug
+
   // TEMPORARY: Bypass admin check to test backend
-const isAdmin = userInfo?.role === "admin";  //   userInfo.role === "admin" || 
-  //   userInfo.role === "administrator" || 
-  //   userInfo.role === "Admin" || 
+  const isAdmin = userInfo?.role === "admin"; //   userInfo.role === "admin" ||
+  //   userInfo.role === "administrator" ||
+  //   userInfo.role === "Admin" ||
   //   userInfo.role === "ADMIN" ||ss
   //   userInfo.role?.toLowerCase()?.includes("admin")
   // );
-  
-  console.log('UserManagement - isAdmin check:', { userInfo, role: userInfo?.role, isAdmin }); // Debug
+
+  console.log("UserManagement - isAdmin check:", {
+    userInfo,
+    role: userInfo?.role,
+    isAdmin,
+  }); // Debug
 
   // 🔹 FETCH USERS WITH RETRY MECHANISM (MUST BE BEFORE useEffect)
   const fetchUsers = useCallback(async (page, search, retryCount = 0) => {
-    console.log('=== FETCH USERS START ==='); // Debug
-    console.log('fetchUsers called with:', { page, search, loading, error, retryCount }); // Debug log
-    console.log('Token available:', !!localStorage.getItem('token')); // Debug token
-    
+    console.log("=== FETCH USERS START ==="); // Debug
+    console.log("fetchUsers called with:", {
+      page,
+      search,
+      loading,
+      error,
+      retryCount,
+    }); // Debug log
+    console.log("Token available:", !!localStorage.getItem("token")); // Debug token
+
     try {
       setLoading(true);
       setError(null);
-      console.log('Making API call to getUsers...'); // Debug API call start
-      
+      console.log("Making API call to getUsers..."); // Debug API call start
+
       const res = await getUsers(page, USERS_PER_PAGE, search);
-      console.log('userServices response:', res);
-      
+      console.log("userServices response:", res);
+
       if (res && res.users) {
-        console.log('Users loaded via userServices:', res.users);
-        console.log('Setting users state with:', res.users.length, 'users');
+        console.log("Users loaded via userServices:", res.users);
+        console.log("Setting users state with:", res.users.length, "users");
         setUsers(res.users || []);
         setTotalPages(res.totalPages || 1);
         setTotalUsers(res.totalUsers || 0);
-        console.log('Users state set successfully!');
+        console.log("Users state set successfully!");
       } else if (Array.isArray(res)) {
-        console.log('Users loaded via userServices (direct array):', res);
-        console.log('Setting users state with:', res.length, 'users');
+        console.log("Users loaded via userServices (direct array):", res);
+        console.log("Setting users state with:", res.length, "users");
         setUsers(res || []);
         setTotalPages(1);
         setTotalUsers(res.length || 0);
-        console.log('Users state set successfully!');
+        console.log("Users state set successfully!");
       } else if (res.data && Array.isArray(res.data)) {
-        console.log('Users loaded via userServices (data array):', res.data);
-        console.log('Setting users state with:', res.data.length, 'users');
+        console.log("Users loaded via userServices (data array):", res.data);
+        console.log("Setting users state with:", res.data.length, "users");
         setUsers(res.data || []);
         setTotalPages(res.totalPages || 1);
         setTotalUsers(res.total || res.data.length || 0);
-        console.log('Users state set successfully!');
+        console.log("Users state set successfully!");
       } else {
-        console.error('Failed to load users via userServices - unknown format:', res);
-        console.error('Expected formats:');
-        console.error('1. {users: [...]}');
-        console.error('2. {data: [...]}');
-        console.error('3. [...direct array...]');
-        
+        console.error(
+          "Failed to load users via userServices - unknown format:",
+          res,
+        );
+        console.error("Expected formats:");
+        console.error("1. {users: [...]}");
+        console.error("2. {data: [...]}");
+        console.error("3. [...direct array...]");
+
         setUsers([]);
         setTotalPages(1);
         setTotalUsers(0);
-        console.log('Set empty users state to stop loading');
+        console.log("Set empty users state to stop loading");
       }
     } catch (error) {
       console.error("Fetch error:", error); // Debug error
@@ -100,11 +126,14 @@ const isAdmin = userInfo?.role === "admin";  //   userInfo.role === "admin" ||
         status: error.response?.status,
         statusText: error.response?.statusText,
         data: error.response?.data,
-        code: error.code
+        code: error.code,
       }); // Debug error details
-      
+
       // Retry logic for timeout errors (max 2 retries)
-      if ((error.code === 'ECONNABORTED' || error.message.includes('timeout')) && retryCount < 2) {
+      if (
+        (error.code === "ECONNABORTED" || error.message.includes("timeout")) &&
+        retryCount < 2
+      ) {
         console.log(`Retrying fetchUsers (attempt ${retryCount + 1})...`);
         const delay = Math.pow(2, retryCount) * 1000; // 1s, 2s delays
         setTimeout(() => {
@@ -112,10 +141,12 @@ const isAdmin = userInfo?.role === "admin";  //   userInfo.role === "admin" ||
         }, delay);
         return;
       }
-      
+
       // Handle timeout errors specifically
-      if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
-        toast.error("Request timed out. Please check your connection and try again.");
+      if (error.code === "ECONNABORTED" || error.message.includes("timeout")) {
+        toast.error(
+          "Request timed out. Please check your connection and try again.",
+        );
         setError("Request timed out. Please try again.");
       } else if (error.response?.status === 401) {
         toast.error("Session expired. Please login again.");
@@ -130,38 +161,38 @@ const isAdmin = userInfo?.role === "admin";  //   userInfo.role === "admin" ||
         toast.error("Failed to fetch users");
         setError(error.message || "Failed to fetch users");
       }
-      
+
       setUsers([]); // 🛡️ fallback
       setTotalPages(1);
       setTotalUsers(0);
     } finally {
-      console.log('=== FETCH USERS FINALLY ==='); // Debug
+      console.log("=== FETCH USERS FINALLY ==="); // Debug
       setLoading(false);
     }
   }, []);
 
   // 🔹 USE EFFECT FOR FETCHING USERS (MUST BE BEFORE ANY CONDITIONAL RETURNS)
   useEffect(() => {
-    console.log('useEffect triggered!'); // Debug
-    console.log('isAdmin:', isAdmin); // Debug
-    console.log('currentPage:', currentPage); // Debug
-    console.log('searchTerm:', searchTerm); // Debug
-    console.log('fetchUsers function:', typeof fetchUsers); // Debug
-    console.log('localStorage token:', !!localStorage.getItem('token')); // Debug
-    console.log('localStorage userInfo:', localStorage.getItem('userInfo')); // Debug
-    
+    console.log("useEffect triggered!"); // Debug
+    console.log("isAdmin:", isAdmin); // Debug
+    console.log("currentPage:", currentPage); // Debug
+    console.log("searchTerm:", searchTerm); // Debug
+    console.log("fetchUsers function:", typeof fetchUsers); // Debug
+    console.log("localStorage token:", !!localStorage.getItem("token")); // Debug
+    console.log("localStorage userInfo:", localStorage.getItem("userInfo")); // Debug
+
     if (isAdmin) {
-      console.log('useEffect - calling fetchUsers'); // Debug
+      console.log("useEffect - calling fetchUsers"); // Debug
       fetchUsers(currentPage, searchTerm);
     } else {
-      console.log('useEffect - isAdmin is false, skipping fetchUsers'); // Debug
+      console.log("useEffect - isAdmin is false, skipping fetchUsers"); // Debug
     }
   }, [isAdmin, currentPage, searchTerm, fetchUsers]);
 
   // 🔹 SEARCH HANDLER (NO ARTIFICIAL LOADING)
   const handleSearch = (e) => {
     const newSearchTerm = e.target.value;
-    console.log('Search triggered'); // Debug log
+    console.log("Search triggered"); // Debug log
     setSearchTerm(newSearchTerm);
     setCurrentPage(1); // Reset to first page when searching
     // fetchUsers will be called by useEffect
@@ -169,7 +200,7 @@ const isAdmin = userInfo?.role === "admin";  //   userInfo.role === "admin" ||
 
   // 🔹 PAGINATION HANDLERS (NO ARTIFICIAL LOADING)
   const handlePageChange = (page) => {
-    console.log('Pagination triggered'); // Debug log
+    console.log("Pagination triggered"); // Debug log
     setCurrentPage(page);
     // fetchUsers will be called by useEffect
   };
@@ -200,16 +231,16 @@ const isAdmin = userInfo?.role === "admin";  //   userInfo.role === "admin" ||
       toast.error("Invalid user data");
       return;
     }
-  
+
     try {
       await deleteUser(deleteUserData._id);
-      
+
       // Create activity log for user deletion
-      const currentUser = JSON.parse(localStorage.getItem('userInfo'));
+      const currentUser = JSON.parse(localStorage.getItem("userInfo"));
       if (currentUser && deleteUserData) {
         try {
           const activityData = {
-            action: 'USER_DELETED',
+            action: "USER_DELETED",
             targetUserId: deleteUserData._id,
             targetUserEmail: deleteUserData.email,
             targetUserName: deleteUserData.username || deleteUserData.name,
@@ -218,20 +249,23 @@ const isAdmin = userInfo?.role === "admin";  //   userInfo.role === "admin" ||
               id: currentUser._id,
               name: currentUser.username || currentUser.name,
               email: currentUser.email,
-              role: currentUser.role
+              role: currentUser.role,
             },
             timestamp: new Date().toISOString(),
-            description: `Deleted user: ${deleteUserData.username || deleteUserData.name} (${deleteUserData.email})`
+            description: `Deleted user: ${deleteUserData.username || deleteUserData.name} (${deleteUserData.email})`,
           };
-          
+
           await createActivityLog(activityData);
-          console.log('User deletion activity log created successfully');
+          console.log("User deletion activity log created successfully");
         } catch (activityError) {
-          console.error('Failed to create user deletion activity log:', activityError);
+          console.error(
+            "Failed to create user deletion activity log:",
+            activityError,
+          );
           // Don't fail the user deletion if activity logging fails
         }
       }
-      
+
       toast.success("User deleted successfully");
       setShowDeleteModal(false);
       setDeleteUserData(null);
@@ -248,8 +282,8 @@ const isAdmin = userInfo?.role === "admin";  //   userInfo.role === "admin" ||
 
   // Handle save new user
   const handleSaveNewUser = async () => {
-    console.log('handleSaveNewUser called with newUser:', newUser); // Debug
-    
+    console.log("handleSaveNewUser called with newUser:", newUser); // Debug
+
     // Validation
     if (!newUser.username || !newUser.email || !newUser.password) {
       toast.error("Username, email, and password are required");
@@ -288,25 +322,25 @@ const isAdmin = userInfo?.role === "admin";  //   userInfo.role === "admin" ||
     try {
       setLoading(true);
       setError(null);
-      console.log('=== USER CREATION START ==='); // Debug
-      console.log('Creating user with data:', newUser); // Debug log
-      console.log('Current user token:', localStorage.getItem('token')); // Debug log
-      console.log('Current user info:', localStorage.getItem('userInfo')); // Debug log
-      console.log('Backend API URL:', 'http://localhost:5000/api/auth/users'); // Debug
-      console.log('Network status:', navigator.onLine ? 'Online' : 'Offline'); // Debug
-      
+      console.log("=== USER CREATION START ==="); // Debug
+      console.log("Creating user with data:", newUser); // Debug log
+      console.log("Current user token:", localStorage.getItem("token")); // Debug log
+      console.log("Currentsz user info:", localStorage.getItem("userInfo")); // Debug log
+      console.log("Backend API URL:", "http://localhost:5000/api/auth/users"); // Debug
+      console.log("Network status:", navigator.onLine ? "Online" : "Offline"); // Debug
+
       // Call the actual API to create user
-      console.log('=== CALLING CREATE USER API ==='); // Debug
-      console.log('Request data:', JSON.stringify(newUser, null, 2)); // Debug
-      
+      console.log("=== CALLING CREATE USER API ==="); // Debug
+      console.log("Request data:", JSON.stringify(newUser, null, 2)); // Debug
+
       const response = await createUser(newUser);
-      
+
       // Create activity log for user creation
-      const currentUser = JSON.parse(localStorage.getItem('userInfo'));
+      const currentUser = JSON.parse(localStorage.getItem("userInfo"));
       if (currentUser && response.user) {
         try {
           const activityData = {
-            action: 'USER_CREATED',
+            action: "USER_CREATED",
             targetUserId: response.user._id,
             targetUserEmail: response.user.email,
             targetUserName: response.user.username || response.user.name,
@@ -315,38 +349,38 @@ const isAdmin = userInfo?.role === "admin";  //   userInfo.role === "admin" ||
               id: currentUser._id,
               name: currentUser.username || currentUser.name,
               email: currentUser.email,
-              role: currentUser.role
+              role: currentUser.role,
             },
             timestamp: new Date().toISOString(),
-            description: `Created new user: ${response.user.username || response.user.name} (${response.user.email})`
+            description: `Created new user: ${response.user.username || response.user.name} (${response.user.email})`,
           };
-          
+
           await createActivityLog(activityData);
-          console.log('Activity log created successfully');
+          console.log("Activity log created successfully");
         } catch (activityError) {
-          console.error('Failed to create activity log:', activityError);
+          console.error("Failed to create activity log:", activityError);
           // Don't fail the user creation if activity logging fails
         }
       }
-      
-   
+
       setShowAddUserModal(false);
       setNewUser({ username: "", email: "", password: "", role: "user" });
-      console.log('=== REFRESHING USER LIST ==='); // Debug
+      console.log("=== REFRESHING USER LIST ==="); // Debug
       fetchUsers(currentPage, searchTerm); // Refresh user list
-      console.log('=== USER CREATION COMPLETE ==='); // Debug
+      console.log("=== USER CREATION COMPLETE ==="); // Debug
     } catch (error) {
-      console.log('=== USER CREATION ERROR ==='); // Debug
-      console.error('Error creating user:', error); // Debug error
-      console.error('Error response:', error.response); // Debug error response
-      console.error('Error status:', error.response?.status); // Debug error status
-      console.error('Error data:', error.response?.data); // Debug error data
-      console.error('Error code:', error.code); // Debug error code
-      console.error('Error message:', error.message); // Debug error message
-      
+      console.log("=== USER CREATION ERROR ==="); // Debug
+      console.error("Error creating user:", error); // Debug error
+      console.error("Error response:", error.response); // Debug error response
+      console.error("Error status:", error.response?.status); // Debug error status
+      console.error("Error data:", error.response?.data); // Debug error data
+      console.error("Error code:", error.code); // Debug error code
+      console.error("Error message:", error.message); // Debug error message
+
       setError(error);
-      const errorMessage = error.response?.data?.message || error.message || "Failed to add user";
-      
+      const errorMessage =
+        error.response?.data?.message || error.message || "Failed to add user";
+
       // Don't show toast for 403 errors to prevent infinite loops
       if (error.response?.status !== 403) {
         toast.error(errorMessage);
@@ -375,12 +409,11 @@ const isAdmin = userInfo?.role === "admin";  //   userInfo.role === "admin" ||
           <div className="user-management-header-content">
             <div>
               <h1 className="user-management-title">User Management</h1>
-              <p className="user-management-subtitle">Manage all users and their permissions</p>
+              <p className="user-management-subtitle">
+                Manage all users and their permissions
+              </p>
             </div>
-            <button 
-              className="user-add-btn"
-              onClick={handleAddUser}
-            >
+            <button className="user-add-btn" onClick={handleAddUser}>
               <FiUserPlus className="w-4 h-4 mr-2" />
               Add User
             </button>
@@ -399,8 +432,8 @@ const isAdmin = userInfo?.role === "admin";  //   userInfo.role === "admin" ||
               placeholder="Search users..."
               value={searchTerm}
               onChange={handleSearch}
-              onInput={(e) => console.log('Input event:', e.target.value)} // Debug input events
-              onKeyDown={(e) => console.log('Key pressed:', e.key)} // Debug keyboard events
+              onInput={(e) => console.log("Input event:", e.target.value)} // Debug input events
+              onKeyDown={(e) => console.log("Key pressed:", e.key)} // Debug keyboard events
               autoComplete="off"
               autoFocus={false}
               spellCheck="false"
@@ -426,18 +459,24 @@ const isAdmin = userInfo?.role === "admin";  //   userInfo.role === "admin" ||
                     <td>
                       <div className="user-info">
                         <div className="user-avatar">
-                          {user?.username?.charAt(0)?.toUpperCase() || user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                          {user?.username?.charAt(0)?.toUpperCase() ||
+                            user?.name?.charAt(0)?.toUpperCase() ||
+                            "U"}
                         </div>
                         <div className="user-details">
-                          <div className="user-name">{user?.username || user?.name || 'Unknown User'}</div>
+                          <div className="user-name">
+                            {user?.username || user?.name || "Unknown User"}
+                          </div>
                         </div>
                       </div>
                     </td>
-                    <td>{user?.email || 'N/A'}</td>
+                    <td>{user?.email || "N/A"}</td>
                     <td>
-                      <span className={`user-role-badge ${user?.role || 'user'}`}>
+                      <span
+                        className={`user-role-badge ${user?.role || "user"}`}
+                      >
                         <FiShield className="w-3 h-3 mr-1" />
-                        {user?.role === 'admin' ? 'Admin' : 'User'}
+                        {user?.role === "admin" ? "Admin" : "User"}
                       </span>
                     </td>
                     <td>
@@ -469,10 +508,11 @@ const isAdmin = userInfo?.role === "admin";  //   userInfo.role === "admin" ||
             <div className="user-pagination">
               <div className="flex items-center justify-between">
                 <div className="user-pagination-info">
-                  Showing <span className="font-medium">{indexOfFirstUser + 1}</span> to{' '}
+                  Showing{" "}
+                  <span className="font-medium">{indexOfFirstUser + 1}</span> to{" "}
                   <span className="font-medium">
                     {Math.min(indexOfLastUser, totalUsers)}
-                  </span>{' '}
+                  </span>{" "}
                   of <span className="font-medium">{totalUsers}</span> results
                 </div>
                 <div className="user-pagination-nav">
@@ -484,23 +524,29 @@ const isAdmin = userInfo?.role === "admin";  //   userInfo.role === "admin" ||
                     <FiChevronLeft className="w-4 h-4" />
                   </button>
                   <button
-                    onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+                    onClick={() =>
+                      handlePageChange(Math.max(1, currentPage - 1))
+                    }
                     disabled={currentPage === 1}
                     className="user-pagination-btn"
                   >
                     Previous
                   </button>
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => (
-                    <button
-                      key={pageNum}
-                      onClick={() => handlePageChange(pageNum)}
-                      className={`user-pagination-btn ${currentPage === pageNum ? 'active' : ''}`}
-                    >
-                      {pageNum}
-                    </button>
-                  ))}
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (pageNum) => (
+                      <button
+                        key={pageNum}
+                        onClick={() => handlePageChange(pageNum)}
+                        className={`user-pagination-btn ${currentPage === pageNum ? "active" : ""}`}
+                      >
+                        {pageNum}
+                      </button>
+                    ),
+                  )}
                   <button
-                    onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
+                    onClick={() =>
+                      handlePageChange(Math.min(totalPages, currentPage + 1))
+                    }
                     disabled={currentPage === totalPages}
                     className="user-pagination-btn"
                   >
@@ -535,14 +581,14 @@ const isAdmin = userInfo?.role === "admin";  //   userInfo.role === "admin" ||
           <div className="user-modal-content">
             <div className="user-modal-header">
               <h3 className="user-modal-title">Add New User</h3>
-              <button 
+              <button
                 className="user-modal-close"
                 onClick={() => setShowAddUserModal(false)}
               >
                 ×
               </button>
             </div>
-            
+
             <div className="user-modal-body">
               <div className="user-form-group">
                 <label className="user-form-label">Username</label>
@@ -551,10 +597,12 @@ const isAdmin = userInfo?.role === "admin";  //   userInfo.role === "admin" ||
                   className="user-form-input"
                   placeholder="Enter username"
                   value={newUser.username}
-                  onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
+                  onChange={(e) =>
+                    setNewUser({ ...newUser, username: e.target.value })
+                  }
                 />
               </div>
-              
+
               <div className="user-form-group">
                 <label className="user-form-label">Email</label>
                 <input
@@ -562,10 +610,12 @@ const isAdmin = userInfo?.role === "admin";  //   userInfo.role === "admin" ||
                   className="user-form-input"
                   placeholder="Enter email address"
                   value={newUser.email}
-                  onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                  onChange={(e) =>
+                    setNewUser({ ...newUser, email: e.target.value })
+                  }
                 />
               </div>
-              
+
               <div className="user-form-group">
                 <label className="user-form-label">Password</label>
                 <input
@@ -573,23 +623,27 @@ const isAdmin = userInfo?.role === "admin";  //   userInfo.role === "admin" ||
                   className="user-form-input"
                   placeholder="Enter password"
                   value={newUser.password}
-                  onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+                  onChange={(e) =>
+                    setNewUser({ ...newUser, password: e.target.value })
+                  }
                 />
               </div>
-              
+
               <div className="user-form-group">
                 <label className="user-form-label">Role</label>
                 <select
                   className="user-form-select"
                   value={newUser.role}
-                  onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
+                  onChange={(e) =>
+                    setNewUser({ ...newUser, role: e.target.value })
+                  }
                 >
                   <option value="user">User</option>
                   <option value="admin">Admin</option>
                 </select>
               </div>
             </div>
-            
+
             <div className="user-modal-footer">
               <button
                 className="user-btn-cancel"
@@ -597,10 +651,7 @@ const isAdmin = userInfo?.role === "admin";  //   userInfo.role === "admin" ||
               >
                 Cancel
               </button>
-              <button
-                className="user-btn-save"
-                onClick={handleSaveNewUser}
-              >
+              <button className="user-btn-save" onClick={handleSaveNewUser}>
                 Add User
               </button>
             </div>
@@ -609,5 +660,5 @@ const isAdmin = userInfo?.role === "admin";  //   userInfo.role === "admin" ||
       )}
     </div>
   );
-}
-  export default UserManagement;
+};
+export default UserManagement;
