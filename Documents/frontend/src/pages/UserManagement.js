@@ -329,34 +329,7 @@ const isAdmin = userInfo?.role === "admin";  //   userInfo.role === "admin" ||
         }
       }
       
-      // Send welcome email to newly created user
-      if (response.user) {
-        try {
-          const emailData = {
-            username: response.user.username || response.user.name,
-            email: response.user.email,
-            password: newUser.password, // Send the password that was used to create the account
-            role: response.user.role || 'user'
-          };
-          
-          console.log('=== SENDING WELCOME EMAIL ===');
-          console.log('Email data:', emailData);
-          
-          await sendWelcomeEmail(emailData);
-          console.log('Welcome email sent successfully');
-          toast.success('Welcome email sent to new user!');
-        } catch (emailError) {
-          console.error('Failed to send welcome email:', emailError);
-          toast.error('User created but failed to send welcome email');
-          // Don't fail the user creation if email sending fails
-        }
-      }
-      
-      toast.success("User added successfully!");
-
-      console.log('=== CREATE USER API RESPONSE ==='); // Debug
-      console.log('User created successfully:', response); // Debug log
-      
+   
       setShowAddUserModal(false);
       setNewUser({ username: "", email: "", password: "", role: "user" });
       console.log('=== REFRESHING USER LIST ==='); // Debug
