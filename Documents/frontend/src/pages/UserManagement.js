@@ -342,9 +342,15 @@ const isAdmin = userInfo?.role === "admin";  //   userInfo.role === "admin" ||
           console.log('=== SENDING WELCOME EMAIL ===');
           console.log('Email data:', emailData);
           
-          await sendWelcomeEmail(emailData);
-          console.log('Welcome email sent successfully');
-          toast.success('Welcome email sent to new user!');
+          const emailResult = await sendWelcomeEmail(emailData);
+          
+          if (emailResult.success) {
+            console.log('Welcome email sent successfully');
+            toast.success('Welcome email sent to new user!');
+          } else {
+            console.error('Welcome email failed:', emailResult.message);
+            toast.error(emailResult.message || 'Failed to send welcome email');
+          }
         } catch (emailError) {
           console.error('Failed to send welcome email:', emailError);
           toast.error('User created but failed to send welcome email');

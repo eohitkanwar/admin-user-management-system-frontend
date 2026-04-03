@@ -64,7 +64,7 @@ export const sendWelcomeEmail = async (userData) => {
     
     // Try to call backend email service
     console.log('=== CALLING BACKEND EMAIL API ==='); // Debug
-    console.log('API URL:', `${api.defaults.baseURL}/auth/users`); // Debug
+    console.log('API URL:', `${api.defaults.baseURL}/auth/send-welcome-email`); // Debug
     console.log('Request data:', {
       email: userData.email,
       username: userData.username,
@@ -98,10 +98,20 @@ export const sendWelcomeEmail = async (userData) => {
       data: error.response?.data
     }); // Debug error details
     
+    // Show specific error based on status code
+    let errorMessage = "Failed to send welcome email";
+    if (error.response?.status === 404) {
+      errorMessage = "Email service endpoint not found. Please check backend configuration.";
+    } else if (error.response?.status === 500) {
+      errorMessage = "Email server error. Please contact administrator.";
+    } else if (error.response?.data?.message) {
+      errorMessage = error.response.data.message;
+    }
+    
     // Don't throw error - user creation should still succeed even if email fails
     return { 
       success: false, 
-      message: error.response?.data?.message || "Failed to send welcome email",
+      message: errorMessage,
       error: error
     };
   }
