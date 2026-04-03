@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { getUsers, deleteUser, createUser } from "../services/userServices";
 import { createActivityLog } from "../services/activityService";
+import { sendWelcomeEmail } from "../services/emailService";
 import { FiEdit2, FiTrash2, FiShield, FiChevronLeft, FiChevronRight, FiSearch, FiUserPlus } from "react-icons/fi";
 import { toast } from "react-toastify";
 import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
@@ -328,12 +329,33 @@ const isAdmin = userInfo?.role === "admin";  //   userInfo.role === "admin" ||
         }
       }
       
+      // Send welcome email to newly created user
+      if (response.user) {
+        try {
+          const emailData = {
+            username: response.user.username || response.user.name,
+            email: response.user.email,
+            password: newUser.password, // Send the password that was used to create the account
+            role: response.user.role || 'user'
+          };
+          
+          console.log('=== SENDING WELCOME EMAIL ===');
+          console.log('Email data:', emailData);
+          
+          await sendWelcomeEmail(emailData);
+          console.log('Welcome email sent successfully');
+          toast.success('Welcome email sent to new user!');
+        } catch (emailError) {
+          console.error('Failed to send welcome email:', emailError);
+          toast.error('User created but failed to send welcome email');
+          // Don't fail the user creation if email sending fails
+        }
+      }
+      
       toast.success("User added successfully!");
 
       console.log('=== CREATE USER API RESPONSE ==='); // Debug
       console.log('User created successfully:', response); // Debug log
-      
-      // Send welcome email
       
       setShowAddUserModal(false);
       setNewUser({ username: "", email: "", password: "", role: "user" });
