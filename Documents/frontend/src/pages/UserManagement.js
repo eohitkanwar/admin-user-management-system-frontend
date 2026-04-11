@@ -235,41 +235,41 @@ const UserManagement = () => {
     try {
       await deleteUser(deleteUserData._id);
 
-      // Create activity log for user deletion
+      // Show success toast immediately
+      toast.success("User deleted successfully");
+      setShowDeleteModal(false);
+      setDeleteUserData(null);
+      
+      // Refresh user list immediately
+      fetchUsers(currentPage, searchTerm);
+
+      // Create activity log for user deletion (non-blocking)
       const currentUser = JSON.parse(localStorage.getItem("userInfo"));
       if (currentUser && deleteUserData) {
-        try {
-          const activityData = {
-            action: "USER_DELETED",
-            targetUserId: deleteUserData._id,
-            targetUserEmail: deleteUserData.email,
-            targetUserName: deleteUserData.username || deleteUserData.name,
-            targetUserRole: deleteUserData.role,
-            performedBy: {
-              id: currentUser._id,
-              name: currentUser.username || currentUser.name,
-              email: currentUser.email,
-              role: currentUser.role,
-            },
-            timestamp: new Date().toISOString(),
-            description: `Deleted user: ${deleteUserData.username || deleteUserData.name} (${deleteUserData.email})`,
-          };
-
-          await createActivityLog(activityData);
+        // Don't await - log in background
+        createActivityLog({
+          action: "USER_DELETED",
+          targetUserId: deleteUserData._id,
+          targetUserEmail: deleteUserData.email,
+          targetUserName: deleteUserData.username || deleteUserData.name,
+          targetUserRole: deleteUserData.role,
+          performedBy: {
+            id: currentUser._id,
+            name: currentUser.username || currentUser.name,
+            email: currentUser.email,
+            role: currentUser.role,
+          },
+          timestamp: new Date().toISOString(),
+          description: `Deleted user: ${deleteUserData.username || deleteUserData.name} (${deleteUserData.email})`,
+        }).then(() => {
           console.log("User deletion activity log created successfully");
-        } catch (activityError) {
+        }).catch((activityError) => {
           console.error(
             "Failed to create user deletion activity log:",
             activityError,
           );
-          // Don't fail the user deletion if activity logging fails
-        }
+        });
       }
-
-      toast.success("User deleted successfully");
-      setShowDeleteModal(false);
-      setDeleteUserData(null);
-      fetchUsers(currentPage, searchTerm); // Refresh user list
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to delete user");
     }
@@ -334,6 +334,9 @@ const UserManagement = () => {
       console.log("Request data:", JSON.stringify(newUser, null, 2)); // Debug
 
       const response = await createUser(newUser);
+
+      // Show success toast immediately
+      toast.success("User added successfully");
 
       // Create activity log for user creation
       const currentUser = JSON.parse(localStorage.getItem("userInfo"));
