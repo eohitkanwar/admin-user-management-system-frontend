@@ -24,7 +24,7 @@ export const createActivityLog = async (activityData) => {
     console.error('Create activity log error:', error);
     throw error;
   }
-};
+};  
 
 // Get activities by specific admin
 export const getActivitiesByAdmin = async (adminId, page = 1, limit = 10) => {
