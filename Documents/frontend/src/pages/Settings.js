@@ -1,22 +1,12 @@
 // src/pages/Settings.js
 import React, { useState, useEffect } from 'react';
-import { FiUser, FiMail, FiLock, FiBell, FiShield, FiDatabase, FiGlobe, FiMoon, FiSun, FiSave, FiRefreshCw, FiTrash2, FiDownload, FiUpload, FiEye, FiEyeOff, FiClock, FiFilter, FiSearch, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import { FiClock, FiFilter, FiSearch, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import { getUserActivities } from '../services/activityService';
 import LoadingSpinner from '../components/LoadingSpinner';
 import '../styles/SettingsPage.css';
 
 const Settings = () => {
-  const [activeTab, setActiveTab] = useState('profile');
-  const [darkMode, setDarkMode] = useState(false);
-  const [emailNotifications, setEmailNotifications] = useState(true);
-  const [pushNotifications, setPushNotifications] = useState(false);
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-
   // Activity history state
   const [activities, setActivities] = useState([]);
   const [activitiesLoading, setActivitiesLoading] = useState(false);
@@ -26,114 +16,26 @@ const Settings = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterAction, setFilterAction] = useState('');
 
-  // Profile state
-  const [profileData, setProfileData] = useState({
-    name: 'Admin User',
-    email: 'admin@example.com',
-    username: 'admin',
-    bio: 'System administrator with full access to all features.',
-    phone: '+1 234 567 8900',
-    location: 'New York, USA'
-  });
-
-  // Password state
-  const [passwordData, setPasswordData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
-  });
-
-  // System settings state
-  const [systemSettings, setSystemSettings] = useState({
-    siteName: 'Admin Dashboard',
-    siteUrl: 'https://example.com',
-    maxUsers: 1000,
-    sessionTimeout: 30,
-    backupFrequency: 'daily',
-    maintenanceMode: false
-  });
-
-  const tabs = [
-    { id: 'profile', label: 'Profile', icon: FiUser },
-    { id: 'security', label: 'Security', icon: FiLock },
-    { id: 'notifications', label: 'Notifications', icon: FiBell },
-    { id: 'system', label: 'System', icon: FiDatabase },
-    { id: 'activity', label: 'Activity History', icon: FiClock },
-    { id: 'appearance', label: 'Appearance', icon: FiGlobe }
-  ];
-
-  // Fetch activities when activity tab is active
+  // Fetch activities on component mount and when filters change
   useEffect(() => {
-    if (activeTab === 'activity') {
-      fetchActivities();
-    }
-  }, [activeTab, currentPage, searchTerm, filterAction]);
+    fetchActivities();
+  }, [currentPage, searchTerm, filterAction]);
 
   const fetchActivities = async () => {
     setActivitiesLoading(true);
     setActivitiesError(null);
     try {
-      console.log('=== FETCHING ACTIVITIES START ===');
       const response = await getUserActivities(currentPage, 10, searchTerm);
-      console.log('=== RAW API RESPONSE ===');
-      console.log('Full response:', response);
-      console.log('Response type:', typeof response);
-      console.log('Is array:', Array.isArray(response));
-      console.log('Response keys:', response ? Object.keys(response) : 'null/undefined');
-      
-      // Handle different response structures
-      let activitiesData = [];
-      let totalPagesData = 1;
-      
-      if (Array.isArray(response)) {
-        console.log('=== RESPONSE IS DIRECT ARRAY ===');
-        activitiesData = response;
-        console.log('Activities from array:', activitiesData);
-      } else if (response && response.data) {
-        console.log('=== RESPONSE HAS DATA PROPERTY ===');
-        activitiesData = response.data;
-        totalPagesData = response.totalPages || response.totalPages || 1;
-        console.log('Activities from data property:', activitiesData);
-        console.log('Total pages:', totalPagesData);
-      } else if (response && response.activities) {
-        console.log('=== RESPONSE HAS ACTIVITIES PROPERTY ===');
-        activitiesData = response.activities;
-        totalPagesData = response.totalPages || response.totalPages || 1;
-        console.log('Activities from activities property:', activitiesData);
-        console.log('Total pages:', totalPagesData);
-      } else if (response && typeof response === 'object') {
-        console.log('=== RESPONSE IS OBJECT - CHECKING ALL KEYS ===');
-        // Check if any key contains an array
-        Object.keys(response).forEach(key => {
-          if (Array.isArray(response[key])) {
-            console.log(`Found array in key "${key}":`, response[key]);
-            activitiesData = response[key];
-          }
-        });
-      } else {
-        console.log('=== USING RESPONSE AS FALLBACK ===');
-        activitiesData = response || [];
-      }
-      
-      console.log('=== FINAL PROCESSED DATA ===');
-      console.log('Activities data:', activitiesData);
-      console.log('Activities length:', activitiesData.length);
-      console.log('Activities type:', typeof activitiesData);
-      console.log('Total pages:', totalPagesData);
-      
-      // Set the state
+      const activitiesData = response.data || response.activities || response;
+      const totalPagesData = response.totalPages || 1;
       setActivities(activitiesData);
       setTotalPages(totalPagesData);
-      
-      console.log('=== STATE UPDATED ===');
-      console.log('=== FETCHING ACTIVITIES END ===');
     } catch (error) {
-      console.error('=== FETCH ERROR ===', error);
+      console.error('Failed to load activity history', error);
       setActivitiesError('Failed to load activity history');
       toast.error('Failed to load activity history');
     } finally {
       setActivitiesLoading(false);
-      console.log('=== LOADING SET TO FALSE ===');
     }
   };
 
@@ -155,132 +57,102 @@ const Settings = () => {
     }
   };
 
-  const getActionIcon = (action) => {
-    switch (action) {
-      case 'USER_CREATED':
-        return '👤';
-      case 'USER_UPDATED':
-        return '✏️';
-      case 'USER_DELETED':
-        return '🗑️';
-      default:
-        return '📋';
-    }
-  };
-
-  const handleProfileSave = async () => {
-    setIsSaving(true);
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      toast.success('Profile updated successfully!');
-    } catch (error) {
-      toast.error('Failed to update profile');
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handlePasswordChange = async () => {
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      toast.error('Passwords do not match');
-      return;
-    }
-    
-    setIsSaving(true);
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      toast.success('Password changed successfully!');
-      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-    } catch (error) {
-      toast.error('Failed to change password');
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleSystemSave = async () => {
-    setIsSaving(true);
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      toast.success('System settings updated successfully!');
-    } catch (error) {
-      toast.error('Failed to update system settings');
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleExportData = () => {
-    toast.info('Exporting data...');
-    // Simulate data export
-    setTimeout(() => {
-      toast.success('Data exported successfully!');
-    }, 2000);
-  };
-
-  const handleClearCache = () => {
-    toast.info('Clearing cache...');
-    // Simulate cache clearing
-    setTimeout(() => {
-      toast.success('Cache cleared successfully!');
-    }, 1500);
-  };
-
   return (
     <div className="settings-container p-6">
       <div className="max-w-6xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">Settings</h1>
-          <p className="text-white/80 text-lg">Manage your account settings and preferences</p>
+          <h1 className="text-4xl font-bold text-white mb-2">Activity History</h1>
+          <p className="text-white/80 text-lg">View all user activities and system events</p>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-6">
-          {/* Sidebar */}
-          <div className="lg:w-64">
-            <div className="settings-sidebar p-4">
-              <nav className="space-y-2">
-                {tabs.map((tab) => {
-                  const Icon = tab.icon;
-                  return (
+        <div className="flex-1">
+          <div className="settings-card p-8">
+            {/* Activity History */}
+            <div>
+              <h2 className="settings-section-title">Activity History</h2>
+              <div className="space-y-8">
+                {/* Search and Filter */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <input
+                      type="search"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      placeholder="Search activities"
+                      className="settings-input"
+                    />
                     <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`settings-tab w-full flex items-center ${
-                        activeTab === tab.id ? 'active' : ''
-                      }`}
+                      onClick={() => setFilterAction('')}
+                      className={`settings-btn-secondary ${filterAction === '' ? 'active' : ''}`}
                     >
-                      <Icon className="w-5 h-5 mr-3 icon" />
-                      {tab.label}
+                      All
                     </button>
-                  );
-                })}
-              </nav>
+                    <button
+                      onClick={() => setFilterAction('USER_CREATED')}
+                      className={`settings-btn-secondary ${filterAction === 'USER_CREATED' ? 'active' : ''}`}
+                    >
+                      Created
+                    </button>
+                    <button
+                      onClick={() => setFilterAction('USER_UPDATED')}
+                      className={`settings-btn-secondary ${filterAction === 'USER_UPDATED' ? 'active' : ''}`}
+                    >
+                      Updated
+                    </button>
+                    <button
+                      onClick={() => setFilterAction('USER_DELETED')}
+                      className={`settings-btn-secondary ${filterAction === 'USER_DELETED' ? 'active' : ''}`}
+                    >
+                      Deleted
+                    </button>
+                  </div>
+                  <div className="flex items-center space-x-4">
+                    <button
+                      onClick={() => setCurrentPage(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className={`settings-btn-secondary ${currentPage === 1 ? 'disabled' : ''}`}
+                    >
+                      <FiChevronLeft className="w-5 h-5" />
+                    </button>
+                    <span className="text-white/80">{currentPage} / {totalPages}</span>
+                    <button
+                      onClick={() => setCurrentPage(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className={`settings-btn-secondary ${currentPage === totalPages ? 'disabled' : ''}`}
+                    >
+                      <FiChevronRight className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Activity List */}
+                {activitiesLoading ? (
+                  <LoadingSpinner />
+                ) : (
+                  <div className="space-y-4">
+                    {activities.map((activity) => (
+                      <div key={activity.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div>
+                          <p className="font-medium text-gray-900">{activity.action}</p>
+                          <p className="text-sm text-gray-500">{formatTimestamp(activity.timestamp)}</p>
+                        </div>
+                        <span className={`px-2 py-1 ${getActionBadgeColor(activity.action)} text-xs font-medium rounded`}>
+                          {activity.action}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
-          {/* Content */}
-          <div className="flex-1">
-            <div className="settings-card p-8">
-              {/* Profile Settings */}
-              {activeTab === 'profile' && (
-                <div>
-                  <h2 className="settings-section-title">Profile Settings</h2>
-                  
-                  <div className="space-y-8">
-                    {/* Avatar Section */}
-                    <div className="flex items-center space-x-6">
-                      <div className="settings-avatar">
-                        {profileData.name.charAt(0)}
-                      </div>
-                      <div>
-                        <button className="settings-btn-primary">
-                          Change Avatar
-                        </button>
-                        <p className="text-white/70 text-sm mt-2">JPG, GIF or PNG. Max size of 2MB</p>
-                      </div>
+export default Settings;
                     </div>
 
                     {/* Profile Form */}
